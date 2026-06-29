@@ -10,7 +10,7 @@ Recommended: configure npm Trusted Publishing for this package:
 
 ```text
 Package: toolgate-mcp
-Repository: Wezylnia/mcp-guard
+Repository: Wezylnia/toolgate
 Workflow: publish.yml
 ```
 

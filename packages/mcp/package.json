@@ -49,13 +49,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Wezylnia/mcp-guard.git",
+    "url": "git+https://github.com/Wezylnia/toolgate.git",
     "directory": "packages/mcp"
   },
   "bugs": {
-    "url": "https://github.com/Wezylnia/mcp-guard/issues"
+    "url": "https://github.com/Wezylnia/toolgate/issues"
   },
-  "homepage": "https://github.com/Wezylnia/mcp-guard#readme",
+  "homepage": "https://github.com/Wezylnia/toolgate#readme",
   "publishConfig": {
     "access": "public"
   },
