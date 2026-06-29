@@ -1,4 +1,5 @@
 import type { ToolPolicy } from "../gate/types.js";
+import { evaluateNetworkPolicy } from "./networkPolicy.js";
 import { evaluatePathPolicy } from "./pathPolicy.js";
 
 export interface PolicyDecision {
@@ -9,5 +10,10 @@ export interface PolicyDecision {
 }
 
 export function evaluatePolicy(policy: ToolPolicy, input: unknown): PolicyDecision {
-  return evaluatePathPolicy(policy, input);
+  const decisions = [
+    evaluatePathPolicy(policy, input),
+    evaluateNetworkPolicy(policy, input)
+  ];
+
+  return decisions.find((decision) => !decision.allowed) ?? { allowed: true };
 }
