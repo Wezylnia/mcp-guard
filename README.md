@@ -111,6 +111,12 @@ npm run build
 npm audit
 ```
 
+## Releases
+
+Npm publishing is automated only from GitHub Releases. Normal commits and pushes do not publish.
+
+Create a release tag that matches the package version, such as `v0.2.1`, and the publish workflow will run tests before publishing `toolgate-mcp` to npm. See [Release Process](docs/release.md).
+
 ## Docs
 
 - [Package README](packages/mcp/README.md)
@@ -120,3 +126,4 @@ npm audit
 - [Manifest](docs/manifest.md)
 - [Limitations](docs/limitations.md)
 - [Examples](docs/examples.md)
+- [Release Process](docs/release.md)
