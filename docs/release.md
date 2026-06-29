@@ -41,7 +41,7 @@ npm publish --dry-run -w toolgate-mcp
 4. Create a GitHub Release with a tag matching the package version:
 
 ```text
-v0.3.1
+v0.5.1
 ```
 
 5. When the release is published, `.github/workflows/publish.yml` runs tests and publishes to npm.

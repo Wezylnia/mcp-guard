@@ -14,6 +14,7 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 
 - this tool is `read`, `write`, `external`, or `destructive`
 - this tool requires approval before execution
+- this tool can ask the host for an explicit async approval decision
 - this tool may only access specific file paths
 - this tool may only call specific network domains
 - this tool may only run specific command strings
@@ -23,6 +24,9 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 - this tool call should be written to a JSONL audit log
 
 It returns structured results instead of throwing for expected policy failures.
+
+Policies are validated when `gate()` is created, so invalid timeouts, rate limits, risks, and
+policy lists fail before a handler is exposed.
 
 Set `audit: true` to write to `.toolgate/audit.jsonl`, or pass `createAuditLogger({ file })` for a custom path.
 
@@ -71,7 +75,7 @@ Because this policy requires approval, the handler is not executed:
 For every protected call, ToolGateKit:
 
 1. Normalizes and evaluates policy inputs.
-2. Blocks path violations and approval-required calls.
+2. Blocks policy violations or obtains a host approval decision when configured.
 3. Creates a handler context with `requestId`, `risk`, `startedAt`, and `AbortSignal`.
 4. Runs the handler with timeout protection.
 5. Redacts output when enabled.
@@ -143,12 +147,18 @@ Rate limiting is in-memory per protected handler instance.
 ```ts
 export {
   gate,
+  gateMcp,
+  toMcpToolResult,
   createAuditLogger,
+  readAuditLog,
+  summarizeAudit,
   createManifest,
   destructiveFilesystemPolicy,
   externalApiPolicy,
   readOnlyFilesystemPolicy,
   policyManifestSchema,
+  validatePolicy,
+  validatePolicies,
   validateManifest,
   redact,
   evaluatePolicy
@@ -159,7 +169,9 @@ export {
 
 ```bash
 toolgate manifest --config toolgate.config.json --out policy-manifest.json
+toolgate validate-config --file toolgate.config.json
 toolgate validate-manifest --file policy-manifest.json
+toolgate audit --file .toolgate/audit.jsonl --decision blocked
 ```
 
 The config file for `toolgate manifest` is JSON:
@@ -192,4 +204,4 @@ Important limitations:
 
 ## Status
 
-v0.3 development for TypeScript MCP servers. ESM-first, Node.js 18+.
+v0.5 for TypeScript MCP servers. ESM-first, Node.js 18+.
