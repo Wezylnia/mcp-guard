@@ -2,6 +2,10 @@
 
 ToolGateKit policies describe the guardrails around one MCP tool handler.
 
+Policies are validated when `gate()` is called. Invalid configuration throws an
+`InvalidToolPolicyError` before the handler can be exposed. Use `validatePolicy()` or
+`validatePolicies()` when validation errors need to be displayed instead of thrown.
+
 ```ts
 import { gate } from "toolgate-mcp";
 

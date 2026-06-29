@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { createManifest } from "../manifest/manifest.js";
 import { validateManifest } from "../manifest/schema.js";
+import { validatePolicies } from "../policy/validatePolicy.js";
 import type { ToolPolicy } from "../gate/types.js";
 
 export interface CliIo {
@@ -32,6 +33,10 @@ export async function runCli(
     return runValidateManifestCommand(rest, io);
   }
 
+  if (command === "validate-config") {
+    return runValidateConfigCommand(rest, io);
+  }
+
   io.stderr.write(`Unknown command '${command}'.\n`);
   writeHelp(io.stderr);
   return 1;
@@ -47,8 +52,9 @@ async function runManifestCommand(args: string[], io: CliIo): Promise<number> {
   }
 
   const config = await readJson<ManifestConfig>(configPath);
-  if (!Array.isArray(config.tools)) {
-    io.stderr.write("Manifest config must contain a tools array.\n");
+  const validation = validatePolicies(config.tools);
+  if (!validation.valid) {
+    writeIssues(validation.issues, io.stderr);
     return 1;
   }
 
@@ -63,6 +69,24 @@ async function runManifestCommand(args: string[], io: CliIo): Promise<number> {
   }
 
   return 0;
+}
+
+async function runValidateConfigCommand(args: string[], io: CliIo): Promise<number> {
+  const options = parseOptions(args);
+  const configPath = options.file ?? options.f ?? options.config ?? options.c;
+  if (!configPath) {
+    io.stderr.write("Missing required --file option.\n");
+    return 1;
+  }
+
+  const config = await readJson<ManifestConfig>(configPath);
+  const result = validatePolicies(config.tools);
+  if (result.valid) {
+    io.stdout.write("Policy config is valid.\n");
+    return 0;
+  }
+  writeIssues(result.issues, io.stderr);
+  return 1;
 }
 
 async function runValidateManifestCommand(args: string[], io: CliIo): Promise<number> {
@@ -120,10 +144,21 @@ function writeHelp(output: Pick<NodeJS.WriteStream, "write">): void {
 
 Usage:
   toolgate manifest --config toolgate.config.json [--out policy-manifest.json]
+  toolgate validate-config --file toolgate.config.json
   toolgate validate-manifest --file policy-manifest.json
 
 Commands:
   manifest           Create a policy manifest from a JSON config.
+  validate-config    Validate a JSON policy config.
   validate-manifest  Validate a policy manifest.
 `);
+}
+
+function writeIssues(
+  issues: Array<{ path: string; message: string }>,
+  output: Pick<NodeJS.WriteStream, "write">
+): void {
+  for (const issue of issues) {
+    output.write(`${issue.path}: ${issue.message}\n`);
+  }
 }

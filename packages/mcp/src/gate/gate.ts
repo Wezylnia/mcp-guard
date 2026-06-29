@@ -2,6 +2,7 @@ import type { AuditLogger } from "../audit/auditLogger.js";
 import { createAuditLogger } from "../audit/jsonlAuditLogger.js";
 import { noopAuditLogger } from "../audit/noopAuditLogger.js";
 import { evaluatePolicy } from "../policy/evaluatePolicy.js";
+import { assertPolicy } from "../policy/validatePolicy.js";
 import { createRateLimiter } from "../rateLimit/rateLimiter.js";
 import { redact } from "../redaction/redact.js";
 import { ToolTimeoutError, withTimeout } from "../timeout/withTimeout.js";
@@ -30,6 +31,7 @@ export function gate<TInput, TOutput>(
   policy: ToolPolicy,
   handler: ToolHandler<TInput, TOutput>
 ): ProtectedToolHandler<TInput, ToolGateResult<TOutput>> {
+  assertPolicy(policy);
   const rateLimiter = createRateLimiter(policy.rateLimit);
 
   return async (input: TInput) => {

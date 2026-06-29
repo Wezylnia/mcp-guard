@@ -75,6 +75,21 @@ describe("cli", () => {
     expect(io.stdoutText()).toContain("Manifest is valid.");
   });
 
+  it("validates policy config files", async () => {
+    const configPath = path.join(tempDir, "toolgate.config.json");
+    await writeFile(
+      configPath,
+      JSON.stringify({ tools: [{ name: "run", rateLimit: { max: 0, windowMs: 1000 } }] }),
+      "utf8"
+    );
+    const io = createIo();
+
+    const exitCode = await runCli(["validate-config", "--file", configPath], io);
+
+    expect(exitCode).toBe(1);
+    expect(io.stderrText()).toContain("$.tools[0].rateLimit.max");
+  });
+
   it("returns errors for invalid manifests", async () => {
     const manifestPath = path.join(tempDir, "bad-manifest.json");
     await writeFile(manifestPath, JSON.stringify({ tools: [{ name: "" }] }), "utf8");

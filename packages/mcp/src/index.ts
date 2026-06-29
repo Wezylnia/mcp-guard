@@ -9,6 +9,12 @@ export {
 } from "./presets/presets.js";
 export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
+export {
+  assertPolicy,
+  InvalidToolPolicyError,
+  validatePolicies,
+  validatePolicy
+} from "./policy/validatePolicy.js";
 
 export type {
   ApprovalDecision,
@@ -31,4 +37,8 @@ export type {
   ManifestValidationIssue,
   ManifestValidationResult
 } from "./manifest/schema.js";
+export type {
+  PolicyValidationIssue,
+  PolicyValidationResult
+} from "./policy/validatePolicy.js";
 export type { RedactionOptions } from "./redaction/redact.js";

@@ -27,6 +27,16 @@ Config format:
 
 The config is intentionally JSON-only. It is for static policy visibility and release checks, not for executing handlers.
 
+## Validate Policy Config
+
+```bash
+toolgate validate-config --file toolgate.config.json
+```
+
+Validation reports field paths for invalid names, risk values, policy lists, timeouts, and rate
+limits. It also rejects duplicate tool names. `manifest` runs the same validation before writing
+output.
+
 ## Validate a Manifest
 
 ```bash

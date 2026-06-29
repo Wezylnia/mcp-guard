@@ -92,6 +92,7 @@ If the agent asks for `.env`, the handler is not executed:
 - default redaction for common secrets and tokens
 - append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
 - policy manifest export for visibility
+- fail-fast runtime policy validation and duplicate-name config checks
 - manifest JSON schema and validation helpers
 - `toolgate` CLI for manifest generation and validation
 - predictable structured errors
@@ -116,6 +117,12 @@ Validate a manifest:
 
 ```bash
 toolgate validate-manifest --file policy-manifest.json
+```
+
+Validate a policy config before generating its manifest:
+
+```bash
+toolgate validate-config --file toolgate.config.json
 ```
 
 ## Development
