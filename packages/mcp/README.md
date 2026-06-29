@@ -2,11 +2,24 @@
 
 Put guardrails around your MCP tools.
 
-`@toolgate/mcp` is a small TypeScript middleware library for Model Context Protocol server authors. It wraps existing tool handlers with policy checks for approval, path access, timeout, redaction, and audit logging.
+`@toolgate/mcp` is a TypeScript middleware package for Model Context Protocol server authors. It wraps existing tool handlers and enforces a declared policy before an AI agent can use that handler.
 
 ```bash
 npm install @toolgate/mcp
 ```
+
+## What It Does
+
+ToolGateKit protects tool handlers at the point where they are registered. A policy can say:
+
+- this tool is `read`, `write`, `external`, or `destructive`
+- this tool requires approval before execution
+- this tool may only access specific file paths
+- this tool must time out after a fixed duration
+- this tool output and audit logs should redact secrets
+- this tool call should be written to a JSONL audit log
+
+It returns structured results instead of throwing for expected policy failures.
 
 ## Quick Start
 
@@ -35,7 +48,7 @@ const deleteFileTool = gate(
 );
 ```
 
-When approval is required, the handler is not executed:
+Because this policy requires approval, the handler is not executed:
 
 ```json
 {
@@ -48,29 +61,17 @@ When approval is required, the handler is not executed:
 }
 ```
 
-## Features
+## Execution Flow
 
-- `gate(policy, handler)` middleware for MCP tool handlers
-- risk metadata: `read`, `write`, `external`, `destructive`
-- approval-required blocking
-- path allowlists and denylists
-- timeout handling with `AbortSignal`
-- default secret redaction
-- JSONL audit logging
-- policy manifest generation
-- structured error responses
+For every protected call, ToolGateKit:
 
-## API
-
-```ts
-export {
-  gate,
-  createAuditLogger,
-  createManifest,
-  redact,
-  evaluatePolicy
-};
-```
+1. Normalizes and evaluates policy inputs.
+2. Blocks path violations and approval-required calls.
+3. Creates a handler context with `requestId`, `risk`, `startedAt`, and `AbortSignal`.
+4. Runs the handler with timeout protection.
+5. Redacts output when enabled.
+6. Writes an audit log entry when configured.
+7. Returns `{ ok: true, data, meta }` or `{ ok: false, error, meta }`.
 
 ## Path Policy
 
@@ -83,9 +84,21 @@ Rules:
 - traversal and absolute paths are blocked
 - if `allowedPaths` is set, paths outside it are denied
 
+## Public API
+
+```ts
+export {
+  gate,
+  createAuditLogger,
+  createManifest,
+  redact,
+  evaluatePolicy
+};
+```
+
 ## Security Boundary
 
-ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, agent framework, or authentication system. It reduces risk around handlers, but it does not make unsafe code safe by itself.
+ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, agent framework, or authentication system. It reduces risk around tool handlers, but it does not make unsafe handler code safe by itself.
 
 Important limitations:
 

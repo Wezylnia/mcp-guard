@@ -2,17 +2,43 @@
 
 Put guardrails around your MCP tools.
 
-ToolGateKit is a small TypeScript middleware library for developers building Model Context Protocol servers. It wraps existing tool handlers with policy checks for approval, path access, timeout, redaction, and audit logging.
+ToolGateKit is a TypeScript middleware library for developers building Model Context Protocol servers. It wraps your existing MCP tool handlers and checks a declared policy before the handler runs.
 
-It is published as:
+Use it when a tool can read files, write data, call APIs, delete records, send messages, or expose sensitive output to an AI agent.
 
 ```bash
 npm install @toolgate/mcp
 ```
 
-## Why
+## What Problem It Solves
 
-MCP tools often touch files, APIs, databases, tickets, email, shell commands, or internal systems. ToolGateKit lets server authors define clear, testable boundaries before an AI agent can run those handlers.
+MCP tools are just functions, but once an agent can call them they need explicit boundaries:
+
+- Can this tool read any path, or only `src/**`?
+- Should `.env`, `secrets/**`, or `node_modules/**` always be blocked?
+- Does a destructive tool require approval before it runs?
+- Should secrets be redacted before output is returned?
+- Should every tool call be written to an audit log?
+- What happens if the handler hangs?
+
+ToolGateKit puts those checks next to the handler, so the policy is visible, testable, and versioned with your server code.
+
+## How It Works
+
+```text
+policy + handler -> protected handler
+```
+
+For each call, ToolGateKit:
+
+1. Evaluates the declared policy.
+2. Blocks approval-required or policy-violating calls.
+3. Runs the handler with timeout support.
+4. Redacts sensitive output if enabled.
+5. Writes an audit entry if configured.
+6. Returns a structured success or error result.
+
+## Example
 
 ```ts
 import { createAuditLogger, gate } from "@toolgate/mcp";
@@ -37,23 +63,38 @@ const readFileTool = gate(
 );
 ```
 
-## What It Does
+If the agent asks for `.env`, the handler is not executed:
 
-- Wraps MCP tool handlers with `gate(policy, handler)`
-- Blocks approval-required tools with structured responses
-- Enforces file path allowlists and denylists
-- Applies handler timeouts with `AbortSignal`
-- Redacts common secrets from output and logs
-- Writes append-only JSONL audit logs
-- Exports a policy manifest for visibility
+```json
+{
+  "ok": false,
+  "error": {
+    "type": "policy_violation",
+    "code": "PATH_DENIED",
+    "message": "Tool 'read_file' is not allowed to access '.env'."
+  }
+}
+```
+
+## Core Features
+
+- `gate(policy, handler)` wrapper for MCP tool handlers
+- risk levels: `read`, `write`, `external`, `destructive`
+- approval-required blocking for dangerous tools
+- path allowlists and denylists with deny-first behavior
+- timeout handling with `AbortSignal`
+- default redaction for common secrets and tokens
+- append-only JSONL audit logs
+- policy manifest export for visibility
+- predictable structured errors
 
 ## What It Is Not
 
-ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, agent framework, or authentication system. It reduces risk around handlers, but it does not make unsafe code safe by itself.
+ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, agent framework, or authentication system. It reduces risk around tool handlers, but it does not make unsafe handler code safe by itself.
 
 ## Status
 
-Early MVP for TypeScript MCP servers. The package is ESM-first and targets Node.js 18+.
+Early MVP for TypeScript MCP servers. ESM-first, Node.js 18+.
 
 ## Development
 
