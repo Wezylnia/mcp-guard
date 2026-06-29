@@ -2,6 +2,7 @@ export { gate } from "./gate/gate.js";
 export { createAuditLogger } from "./audit/jsonlAuditLogger.js";
 export { readAuditLog, summarizeAudit } from "./audit/readAuditLog.js";
 export { createManifest } from "./manifest/manifest.js";
+export { gateMcp, isMcpToolResult, toMcpToolResult } from "./mcp/adapter.js";
 export { policyManifestSchema, validateManifest } from "./manifest/schema.js";
 export {
   destructiveFilesystemPolicy,
@@ -48,4 +49,9 @@ export type {
   PolicyValidationIssue,
   PolicyValidationResult
 } from "./policy/validatePolicy.js";
+export type {
+  McpAdapterOptions,
+  McpContentBlock,
+  McpToolResult
+} from "./mcp/adapter.js";
 export type { RedactionOptions } from "./redaction/redact.js";

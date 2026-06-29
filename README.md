@@ -79,6 +79,7 @@ If the agent asks for `.env`, the handler is not executed:
 ## Core Features
 
 - `gate(policy, handler)` wrapper for MCP tool handlers
+- `gateMcp(policy, handler)` adapter for MCP-compatible `content` and `isError` results
 - risk levels: `read`, `write`, `external`, `destructive`
 - approval-required blocking for dangerous tools
 - host-driven async approval providers with structured denial and failure results
@@ -159,4 +160,5 @@ Create a release tag that matches the package version, such as `v0.3.1`, and the
 - [CLI](docs/cli.md)
 - [Limitations](docs/limitations.md)
 - [Examples](docs/examples.md)
+- [MCP Integration](docs/mcp-integration.md)
 - [Release Process](docs/release.md)

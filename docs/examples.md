@@ -1,5 +1,7 @@
 # Examples
 
+For direct registration with an MCP SDK server, see [MCP Integration](mcp-integration.md).
+
 The repository includes a filesystem example in `packages/mcp/examples/filesystem-server/read-file.ts`.
 
 It demonstrates:
