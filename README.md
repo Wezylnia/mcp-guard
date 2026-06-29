@@ -43,6 +43,15 @@ npm run build
 npm audit
 ```
 
+## Documentation
+
+- [Policies](docs/policies.md)
+- [Audit logs](docs/audit-logs.md)
+- [Redaction](docs/redaction.md)
+- [Manifest](docs/manifest.md)
+- [Limitations](docs/limitations.md)
+- [Examples](docs/examples.md)
+
 ## Scope
 
 ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, or agent framework. It is a focused developer library for adding clear, testable guardrails around existing MCP tool handlers.
