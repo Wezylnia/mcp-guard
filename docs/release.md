@@ -41,9 +41,15 @@ npm publish --dry-run -w toolgate-mcp
 4. Create a GitHub Release with a tag matching the package version:
 
 ```text
-v0.2.1
+v0.3.1
 ```
 
 5. When the release is published, `.github/workflows/publish.yml` runs tests and publishes to npm.
 
 The workflow refuses to publish when the release tag does not match `packages/mcp/package.json`.
+
+For v0.3 and later, validate generated policy manifests before publishing if the release changes policy docs or examples:
+
+```bash
+toolgate validate-manifest --file policy-manifest.json
+```

@@ -91,6 +91,8 @@ If the agent asks for `.env`, the handler is not executed:
 - default redaction for common secrets and tokens
 - append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
 - policy manifest export for visibility
+- manifest JSON schema and validation helpers
+- `toolgate` CLI for manifest generation and validation
 - predictable structured errors
 
 ## What It Is Not
@@ -99,7 +101,21 @@ ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval 
 
 ## Status
 
-v0.2 development for TypeScript MCP servers. ESM-first, Node.js 18+.
+v0.3 development for TypeScript MCP servers. ESM-first, Node.js 18+.
+
+## CLI
+
+Generate a manifest from a JSON policy config:
+
+```bash
+toolgate manifest --config toolgate.config.json --out policy-manifest.json
+```
+
+Validate a manifest:
+
+```bash
+toolgate validate-manifest --file policy-manifest.json
+```
 
 ## Development
 
@@ -115,7 +131,7 @@ npm audit
 
 Npm publishing is automated only from GitHub Releases. Normal commits and pushes do not publish.
 
-Create a release tag that matches the package version, such as `v0.2.1`, and the publish workflow will run tests before publishing `toolgate-mcp` to npm. See [Release Process](docs/release.md).
+Create a release tag that matches the package version, such as `v0.3.1`, and the publish workflow will run tests before publishing `toolgate-mcp` to npm. See [Release Process](docs/release.md).
 
 ## Docs
 
@@ -124,6 +140,7 @@ Create a release tag that matches the package version, such as `v0.2.1`, and the
 - [Audit logs](docs/audit-logs.md)
 - [Redaction](docs/redaction.md)
 - [Manifest](docs/manifest.md)
+- [CLI](docs/cli.md)
 - [Limitations](docs/limitations.md)
 - [Examples](docs/examples.md)
 - [Release Process](docs/release.md)

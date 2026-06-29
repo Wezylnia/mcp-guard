@@ -148,9 +148,35 @@ export {
   destructiveFilesystemPolicy,
   externalApiPolicy,
   readOnlyFilesystemPolicy,
+  policyManifestSchema,
+  validateManifest,
   redact,
   evaluatePolicy
 };
+```
+
+## CLI
+
+```bash
+toolgate manifest --config toolgate.config.json --out policy-manifest.json
+toolgate validate-manifest --file policy-manifest.json
+```
+
+The config file for `toolgate manifest` is JSON:
+
+```json
+{
+  "name": "filesystem-mcp",
+  "tools": [
+    {
+      "name": "read_file",
+      "risk": "read",
+      "allowedPaths": ["src/**"],
+      "deniedPaths": [".env"],
+      "audit": true
+    }
+  ]
+}
 ```
 
 ## Security Boundary
@@ -166,4 +192,4 @@ Important limitations:
 
 ## Status
 
-v0.2 development for TypeScript MCP servers. ESM-first, Node.js 18+.
+v0.3 development for TypeScript MCP servers. ESM-first, Node.js 18+.
