@@ -6,10 +6,17 @@
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "toolgate": "./dist/cli/index.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/manifest/schema.d.ts",
+      "import": "./dist/manifest/schema.js"
     }
   },
   "files": [
