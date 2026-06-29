@@ -1,0 +1,151 @@
+import type { AuditLogger } from "../audit/auditLogger.js";
+import { noopAuditLogger } from "../audit/noopAuditLogger.js";
+import { evaluatePolicy } from "../policy/evaluatePolicy.js";
+import { redact } from "../redaction/redact.js";
+import { ToolTimeoutError, withTimeout } from "../timeout/withTimeout.js";
+import { createRequestId } from "../utils/createRequestId.js";
+import { safeJsonClone, summarizeOutput } from "../utils/safeJson.js";
+import {
+  approvalRequiredError,
+  createMeta,
+  handlerError,
+  policyViolationError,
+  redactionError,
+  timeoutError
+} from "./result.js";
+import type {
+  ProtectedToolHandler,
+  ToolGateContext,
+  ToolGateResult,
+  ToolHandler,
+  ToolPolicy
+} from "./types.js";
+
+export function gate<TInput, TOutput>(
+  policy: ToolPolicy,
+  handler: ToolHandler<TInput, TOutput>
+): ProtectedToolHandler<TInput, ToolGateResult<TOutput>> {
+  return async (input: TInput) => {
+    const controller = new AbortController();
+    const ctx: ToolGateContext = {
+      toolName: policy.name,
+      risk: policy.risk ?? "read",
+      signal: controller.signal,
+      startedAt: new Date(),
+      requestId: createRequestId(),
+      policy
+    };
+    const audit = resolveAuditLogger(policy);
+    const auditInput = redactForLogs(input, policy);
+
+    const decision = evaluatePolicy(policy, input);
+    if (!decision.allowed) {
+      const error = policyViolationError(policy, decision);
+      await safeAudit(audit, {
+        timestamp: new Date().toISOString(),
+        tool: policy.name,
+        risk: ctx.risk,
+        decision: "blocked",
+        requestId: ctx.requestId,
+        durationMs: createMeta(ctx).durationMs,
+        reason: error.code,
+        input: auditInput,
+        metadata: policy.metadata
+      });
+      return { ok: false, error, meta: createMeta(ctx) };
+    }
+
+    if (policy.requireApproval) {
+      const error = approvalRequiredError(policy);
+      await safeAudit(audit, {
+        timestamp: new Date().toISOString(),
+        tool: policy.name,
+        risk: ctx.risk,
+        decision: "blocked",
+        requestId: ctx.requestId,
+        durationMs: createMeta(ctx).durationMs,
+        reason: error.code,
+        input: auditInput,
+        metadata: policy.metadata
+      });
+      return { ok: false, error, meta: createMeta(ctx) };
+    }
+
+    try {
+      const output = await withTimeout(handler(input, ctx), policy.timeoutMs, controller, policy);
+      let redactedOutput: TOutput;
+      try {
+        redactedOutput = policy.redact ? redact(output, policy.redact) : output;
+      } catch (error) {
+        const normalizedError = redactionError(policy, error);
+        await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+        return { ok: false, error: normalizedError, meta: createMeta(ctx) };
+      }
+
+      await safeAudit(audit, {
+        timestamp: new Date().toISOString(),
+        tool: policy.name,
+        risk: ctx.risk,
+        decision: "allowed",
+        requestId: ctx.requestId,
+        durationMs: createMeta(ctx).durationMs,
+        input: auditInput,
+        outputSummary: summarizeOutput(redactedOutput),
+        metadata: policy.metadata
+      });
+
+      return { ok: true, data: redactedOutput, meta: createMeta(ctx) };
+    } catch (error) {
+      const normalizedError =
+        error instanceof ToolTimeoutError
+          ? timeoutError(policy, error.timeoutMs)
+          : handlerError(policy, error);
+
+      await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+      return { ok: false, error: normalizedError, meta: createMeta(ctx) };
+    }
+  };
+}
+
+function resolveAuditLogger(policy: ToolPolicy): AuditLogger {
+  if (policy.audit && typeof policy.audit === "object") {
+    return policy.audit;
+  }
+  return noopAuditLogger;
+}
+
+function redactForLogs(input: unknown, policy: ToolPolicy): unknown {
+  if (policy.redact === false) {
+    return safeJsonClone(input);
+  }
+  return redact(safeJsonClone(input), policy.redact || true);
+}
+
+async function auditFailure(
+  audit: AuditLogger,
+  policy: ToolPolicy,
+  ctx: ToolGateContext,
+  input: unknown,
+  error: unknown
+): Promise<void> {
+  await safeAudit(audit, {
+    timestamp: new Date().toISOString(),
+    tool: policy.name,
+    risk: ctx.risk,
+    decision: "failed",
+    requestId: ctx.requestId,
+    durationMs: createMeta(ctx).durationMs,
+    reason: typeof error === "object" && error && "code" in error ? String(error.code) : "ERROR",
+    input,
+    error,
+    metadata: policy.metadata
+  });
+}
+
+async function safeAudit(audit: AuditLogger, entry: Parameters<AuditLogger["log"]>[0]): Promise<void> {
+  try {
+    await audit.log(entry);
+  } catch {
+    // Audit logging should not crash tool calls by default. Custom loggers can record their own failures.
+  }
+}

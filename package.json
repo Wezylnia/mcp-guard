@@ -1,0 +1,18 @@
+{
+  "name": "toolgatekit",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @toolgate/mcp",
+    "test": "npm run test -w @toolgate/mcp",
+    "typecheck": "npm run typecheck -w @toolgate/mcp"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.9"
+  }
+}

@@ -1,0 +1,5 @@
+private-docs/
+node_modules/
+dist/
+coverage/
+.toolgate/
