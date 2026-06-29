@@ -7,7 +7,7 @@ ToolGateKit is a TypeScript middleware library for developers building Model Con
 Use it when a tool can read files, write data, call APIs, delete records, send messages, or expose sensitive output to an AI agent.
 
 ```bash
-npm install @toolgate/mcp
+npm install toolgate-mcp
 ```
 
 ## What Problem It Solves
@@ -41,7 +41,7 @@ For each call, ToolGateKit:
 ## Example
 
 ```ts
-import { createAuditLogger, gate } from "@toolgate/mcp";
+import { createAuditLogger, gate } from "toolgate-mcp";
 
 const audit = createAuditLogger({
   file: ".toolgate/audit.jsonl"

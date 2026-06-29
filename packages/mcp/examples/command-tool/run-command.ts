@@ -1,4 +1,4 @@
-import { gate } from "@toolgate/mcp";
+import { gate } from "toolgate-mcp";
 
 async function runCommand(command: string): Promise<{ command: string }> {
   return { command };

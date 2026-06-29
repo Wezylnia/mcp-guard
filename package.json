@@ -7,9 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @toolgate/mcp",
-    "test": "npm run test -w @toolgate/mcp",
-    "typecheck": "npm run typecheck -w @toolgate/mcp"
+    "build": "npm run build -w toolgate-mcp",
+    "test": "npm run test -w toolgate-mcp",
+    "typecheck": "npm run typecheck -w toolgate-mcp"
   },
   "devDependencies": {
     "@types/node": "^26.0.1",

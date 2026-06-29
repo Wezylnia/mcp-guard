@@ -2,10 +2,10 @@
 
 Put guardrails around your MCP tools.
 
-`@toolgate/mcp` is a TypeScript middleware package for Model Context Protocol server authors. It wraps existing tool handlers and enforces a declared policy before an AI agent can use that handler.
+`toolgate-mcp` is a TypeScript middleware package for Model Context Protocol server authors. It wraps existing tool handlers and enforces a declared policy before an AI agent can use that handler.
 
 ```bash
-npm install @toolgate/mcp
+npm install toolgate-mcp
 ```
 
 ## What It Does
@@ -29,7 +29,7 @@ Set `audit: true` to write to `.toolgate/audit.jsonl`, or pass `createAuditLogge
 ## Quick Start
 
 ```ts
-import { createAuditLogger, gate } from "@toolgate/mcp";
+import { createAuditLogger, gate } from "toolgate-mcp";
 
 const audit = createAuditLogger({
   file: ".toolgate/audit.jsonl"

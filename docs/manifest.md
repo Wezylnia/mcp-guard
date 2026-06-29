@@ -3,7 +3,7 @@
 Use `createManifest` to export visible policy metadata.
 
 ```ts
-import { createManifest } from "@toolgate/mcp";
+import { createManifest } from "toolgate-mcp";
 
 const manifest = createManifest(
   [

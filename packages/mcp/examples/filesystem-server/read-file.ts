@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { createAuditLogger, gate } from "@toolgate/mcp";
+import { createAuditLogger, gate } from "toolgate-mcp";
 
 const audit = createAuditLogger({
   file: ".toolgate/audit.jsonl"

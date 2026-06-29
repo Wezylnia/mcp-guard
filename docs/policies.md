@@ -3,7 +3,7 @@
 ToolGateKit policies describe the guardrails around one MCP tool handler.
 
 ```ts
-import { gate } from "@toolgate/mcp";
+import { gate } from "toolgate-mcp";
 
 const readFileTool = gate(
   {

@@ -1,5 +1,5 @@
 {
-  "name": "@toolgate/mcp",
+  "name": "toolgate-mcp",
   "version": "0.2.0",
   "description": "Policy, approval, redaction, timeout, and audit middleware for MCP server tools.",
   "type": "module",

@@ -1,4 +1,4 @@
-import { gate } from "@toolgate/mcp";
+import { gate } from "toolgate-mcp";
 
 export const fetchUrlTool = gate(
   {
