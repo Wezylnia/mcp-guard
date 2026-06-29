@@ -1,17 +1,21 @@
 # ToolGateKit
 
-Policy, approval, redaction, timeout, and audit middleware for MCP server tools.
+Put guardrails around your MCP tools.
 
-The npm package lives in [packages/mcp](packages/mcp). It exposes `@toolgate/mcp`, an ESM-first TypeScript library for wrapping Model Context Protocol tool handlers with explicit guardrails.
+ToolGateKit is a small TypeScript middleware library for developers building Model Context Protocol servers. It wraps existing tool handlers with policy checks for approval, path access, timeout, redaction, and audit logging.
 
-## Package
+It is published as:
 
 ```bash
 npm install @toolgate/mcp
 ```
 
+## Why
+
+MCP tools often touch files, APIs, databases, tickets, email, shell commands, or internal systems. ToolGateKit lets server authors define clear, testable boundaries before an AI agent can run those handlers.
+
 ```ts
-import { gate, createAuditLogger } from "@toolgate/mcp";
+import { createAuditLogger, gate } from "@toolgate/mcp";
 
 const audit = createAuditLogger({
   file: ".toolgate/audit.jsonl"
@@ -27,11 +31,29 @@ const readFileTool = gate(
     redact: true,
     audit
   },
-  async ({ path }) => ({
-    content: await fs.readFile(path, "utf8")
+  async ({ path }, ctx) => ({
+    content: await fs.readFile(path, { encoding: "utf8", signal: ctx.signal })
   })
 );
 ```
+
+## What It Does
+
+- Wraps MCP tool handlers with `gate(policy, handler)`
+- Blocks approval-required tools with structured responses
+- Enforces file path allowlists and denylists
+- Applies handler timeouts with `AbortSignal`
+- Redacts common secrets from output and logs
+- Writes append-only JSONL audit logs
+- Exports a policy manifest for visibility
+
+## What It Is Not
+
+ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, agent framework, or authentication system. It reduces risk around handlers, but it does not make unsafe code safe by itself.
+
+## Status
+
+Early MVP for TypeScript MCP servers. The package is ESM-first and targets Node.js 18+.
 
 ## Development
 
@@ -43,15 +65,12 @@ npm run build
 npm audit
 ```
 
-## Documentation
+## Docs
 
+- [Package README](packages/mcp/README.md)
 - [Policies](docs/policies.md)
 - [Audit logs](docs/audit-logs.md)
 - [Redaction](docs/redaction.md)
 - [Manifest](docs/manifest.md)
 - [Limitations](docs/limitations.md)
 - [Examples](docs/examples.md)
-
-## Scope
-
-ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval UI, or agent framework. It is a focused developer library for adding clear, testable guardrails around existing MCP tool handlers.
