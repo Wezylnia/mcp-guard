@@ -3,6 +3,8 @@ import type { RedactionOptions } from "../redaction/redact.js";
 
 export type ToolRisk = "read" | "write" | "external" | "destructive";
 
+export type ToolInputExtractor<T = string> = (input: unknown) => T | T[] | undefined;
+
 export interface ToolPolicy {
   name: string;
   description?: string;
@@ -10,6 +12,13 @@ export interface ToolPolicy {
   requireApproval?: boolean;
   allowedPaths?: string[];
   deniedPaths?: string[];
+  extractPaths?: ToolInputExtractor;
+  allowedDomains?: string[];
+  deniedDomains?: string[];
+  extractUrls?: ToolInputExtractor;
+  allowedCommands?: string[];
+  deniedCommands?: string[];
+  extractCommands?: ToolInputExtractor;
   timeoutMs?: number;
   redact?: boolean | RedactionOptions;
   audit?: boolean | AuditLogger;

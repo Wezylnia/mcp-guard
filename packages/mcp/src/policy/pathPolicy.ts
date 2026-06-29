@@ -28,7 +28,9 @@ export function evaluatePathPolicy(policy: ToolPolicy, input: unknown): PathPoli
     return { allowed: true };
   }
 
-  const paths = extractPolicyPaths(input);
+  const paths = policy.extractPaths
+    ? normalizeExtractorResult(policy.extractPaths(input))
+    : extractPolicyPaths(input);
   if (paths.length === 0) {
     return { allowed: true };
   }
@@ -50,6 +52,14 @@ export function evaluatePathPolicy(policy: ToolPolicy, input: unknown): PathPoli
   }
 
   return { allowed: true };
+}
+
+function normalizeExtractorResult(value: string | string[] | undefined): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  return value ?? [];
 }
 
 function denied(policy: ToolPolicy, path: string, reason?: string): PathPolicyResult {

@@ -10,6 +10,7 @@ export type {
   ToolGateErrorType,
   ToolGateMeta,
   ToolGateResult,
+  ToolInputExtractor,
   ProtectedToolHandler,
   ToolHandler,
   ToolPolicy,
