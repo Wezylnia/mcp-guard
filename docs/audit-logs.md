@@ -2,6 +2,8 @@
 
 ToolGateKit can write JSONL audit logs for tool calls.
 
+Use `audit: true` for the default `.toolgate/audit.jsonl` file, or pass a logger from `createAuditLogger({ file })` for a custom path.
+
 ```ts
 import { createAuditLogger, gate } from "@toolgate/mcp";
 

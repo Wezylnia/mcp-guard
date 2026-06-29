@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Policy, approval, redaction, timeout, and audit middleware for MCP server tools.",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,11 +14,14 @@
   },
   "files": [
     "dist",
+    "examples",
+    "LICENSE",
     "README.md"
   ],
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "npm run clean && tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -26,10 +30,26 @@
     "model-context-protocol",
     "middleware",
     "policy",
+    "security",
     "audit",
-    "redaction"
+    "audit-logging",
+    "redaction",
+    "approval",
+    "guardrails"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wezylnia/mcp-guard.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/Wezylnia/mcp-guard/issues"
+  },
+  "homepage": "https://github.com/Wezylnia/mcp-guard#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18"
   },

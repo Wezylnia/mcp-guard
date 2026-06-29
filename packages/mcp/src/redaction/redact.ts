@@ -78,5 +78,11 @@ function redactString(value: string, options: Required<RedactionOptions>): strin
 
 function isSensitiveKey(key: string, sensitiveKeys: string[]): boolean {
   const normalizedKey = key.toLowerCase();
-  return sensitiveKeys.some((sensitiveKey) => normalizedKey === sensitiveKey.toLowerCase());
+  return sensitiveKeys.some((sensitiveKey) => {
+    const normalizedSensitiveKey = sensitiveKey.toLowerCase();
+    return (
+      normalizedKey === normalizedSensitiveKey ||
+      normalizedKey.endsWith(normalizedSensitiveKey)
+    );
+  });
 }

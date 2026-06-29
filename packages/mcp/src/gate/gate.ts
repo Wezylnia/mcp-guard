@@ -1,4 +1,5 @@
 import type { AuditLogger } from "../audit/auditLogger.js";
+import { createAuditLogger } from "../audit/jsonlAuditLogger.js";
 import { noopAuditLogger } from "../audit/noopAuditLogger.js";
 import { evaluatePolicy } from "../policy/evaluatePolicy.js";
 import { redact } from "../redaction/redact.js";
@@ -110,6 +111,9 @@ export function gate<TInput, TOutput>(
 function resolveAuditLogger(policy: ToolPolicy): AuditLogger {
   if (policy.audit && typeof policy.audit === "object") {
     return policy.audit;
+  }
+  if (policy.audit === true) {
+    return createAuditLogger({ file: ".toolgate/audit.jsonl" });
   }
   return noopAuditLogger;
 }

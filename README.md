@@ -84,7 +84,7 @@ If the agent asks for `.env`, the handler is not executed:
 - path allowlists and denylists with deny-first behavior
 - timeout handling with `AbortSignal`
 - default redaction for common secrets and tokens
-- append-only JSONL audit logs
+- append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
 - policy manifest export for visibility
 - predictable structured errors
 

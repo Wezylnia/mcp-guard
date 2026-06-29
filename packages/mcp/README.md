@@ -21,6 +21,8 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 
 It returns structured results instead of throwing for expected policy failures.
 
+Set `audit: true` to write to `.toolgate/audit.jsonl`, or pass `createAuditLogger({ file })` for a custom path.
+
 ## Quick Start
 
 ```ts

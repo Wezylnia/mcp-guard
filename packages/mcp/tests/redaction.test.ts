@@ -19,6 +19,18 @@ describe("redaction", () => {
     });
   });
 
+  it("redacts common compound secret keys", () => {
+    const output = redact({
+      githubToken: "ghp_abcdefghijklmnopqrstuvwxyz",
+      databasePassword: "secret"
+    });
+
+    expect(output).toEqual({
+      githubToken: "[REDACTED]",
+      databasePassword: "[REDACTED]"
+    });
+  });
+
   it("redacts handler output when enabled", async () => {
     const protectedHandler = gate(
       { name: "get_config", redact: true },
