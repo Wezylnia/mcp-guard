@@ -1,5 +1,6 @@
 export { gate } from "./gate/gate.js";
 export { createAuditLogger } from "./audit/jsonlAuditLogger.js";
+export { readAuditLog, summarizeAudit } from "./audit/readAuditLog.js";
 export { createManifest } from "./manifest/manifest.js";
 export { policyManifestSchema, validateManifest } from "./manifest/schema.js";
 export {
@@ -33,6 +34,12 @@ export type {
   ToolRisk
 } from "./gate/types.js";
 export type { AuditEntry, AuditLogger, CreateAuditLoggerOptions } from "./audit/auditLogger.js";
+export type {
+  AuditQuery,
+  AuditReadIssue,
+  AuditReadResult,
+  AuditSummary
+} from "./audit/readAuditLog.js";
 export type {
   ManifestValidationIssue,
   ManifestValidationResult

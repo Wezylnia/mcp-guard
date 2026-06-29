@@ -100,6 +100,32 @@ describe("cli", () => {
     expect(exitCode).toBe(1);
     expect(io.stderrText()).toContain("$.tools[0].name");
   });
+
+  it("summarizes filtered audit logs as JSON", async () => {
+    const auditPath = path.join(tempDir, "audit.jsonl");
+    await writeFile(
+      auditPath,
+      `${JSON.stringify({
+        timestamp: "2026-01-01T00:00:00.000Z",
+        tool: "read_file",
+        risk: "read",
+        decision: "blocked",
+        requestId: "req-1",
+        reason: "PATH_DENIED",
+        durationMs: 4
+      })}\n`,
+      "utf8"
+    );
+    const io = createIo();
+
+    const exitCode = await runCli(
+      ["audit", "--file", auditPath, "--decision", "blocked", "--json"],
+      io
+    );
+
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(io.stdoutText()).summary).toMatchObject({ total: 1, reasons: { PATH_DENIED: 1 } });
+  });
 });
 
 function createIo(): {

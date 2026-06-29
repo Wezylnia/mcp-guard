@@ -44,3 +44,13 @@ toolgate validate-manifest --file policy-manifest.json
 ```
 
 The command exits with code `0` for a valid manifest and `1` with field-level messages for invalid manifests.
+
+## Inspect Audit Logs
+
+```bash
+toolgate audit --file .toolgate/audit.jsonl --decision blocked --limit 100
+```
+
+Filters include `--tool`, `--decision`, `--reason`, `--since`, `--until`, and `--limit`. Add
+`--json` for machine-readable summary and parse issues. The command exits with code `1` if any
+malformed audit lines are found.
