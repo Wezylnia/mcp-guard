@@ -81,6 +81,7 @@ If the agent asks for `.env`, the handler is not executed:
 - `gate(policy, handler)` wrapper for MCP tool handlers
 - risk levels: `read`, `write`, `external`, `destructive`
 - approval-required blocking for dangerous tools
+- host-driven async approval providers with structured denial and failure results
 - path allowlists and denylists with deny-first behavior
 - network domain allowlists and denylists
 - command allowlists and denylists
@@ -137,6 +138,7 @@ Create a release tag that matches the package version, such as `v0.3.1`, and the
 
 - [Package README](packages/mcp/README.md)
 - [Policies](docs/policies.md)
+- [Approvals](docs/approvals.md)
 - [Audit logs](docs/audit-logs.md)
 - [Redaction](docs/redaction.md)
 - [Manifest](docs/manifest.md)

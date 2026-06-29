@@ -31,7 +31,9 @@ Risk levels are metadata. They appear in results, logs, and manifests.
 
 ## Approval
 
-When `requireApproval` is true, ToolGateKit blocks execution and returns a structured `APPROVAL_REQUIRED` response. It does not implement approval UI.
+When `requireApproval` is true, ToolGateKit blocks execution and returns a structured
+`APPROVAL_REQUIRED` response unless the host supplies an async `approval` provider. See
+[Approvals](approvals.md).
 
 ## Path Policy
 

@@ -10,11 +10,30 @@ export interface RateLimitOptions {
   windowMs: number;
 }
 
+export interface ApprovalRequest<TInput = unknown> {
+  input: TInput;
+  requestId: string;
+  toolName: string;
+  risk: ToolRisk;
+  policy: ToolPolicy;
+}
+
+export interface ApprovalDecision {
+  approved: boolean;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export type ApprovalProvider = (
+  request: ApprovalRequest
+) => boolean | ApprovalDecision | Promise<boolean | ApprovalDecision>;
+
 export interface ToolPolicy {
   name: string;
   description?: string;
   risk?: ToolRisk;
   requireApproval?: boolean;
+  approval?: ApprovalProvider;
   allowedPaths?: string[];
   deniedPaths?: string[];
   extractPaths?: ToolInputExtractor;
@@ -52,6 +71,8 @@ export type ProtectedToolHandler<TInput, TOutput> = (
 export type ToolGateErrorType =
   | "policy_violation"
   | "approval_required"
+  | "approval_denied"
+  | "approval_error"
   | "rate_limited"
   | "timeout"
   | "handler_error"

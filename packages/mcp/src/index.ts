@@ -11,6 +11,9 @@ export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
 
 export type {
+  ApprovalDecision,
+  ApprovalProvider,
+  ApprovalRequest,
   ToolGateContext,
   ToolGateError,
   ToolGateErrorType,

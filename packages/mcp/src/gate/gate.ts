@@ -8,6 +8,8 @@ import { ToolTimeoutError, withTimeout } from "../timeout/withTimeout.js";
 import { createRequestId } from "../utils/createRequestId.js";
 import { safeJsonClone, summarizeOutput } from "../utils/safeJson.js";
 import {
+  approvalDeniedError,
+  approvalError,
   approvalRequiredError,
   createMeta,
   handlerError,
@@ -42,6 +44,7 @@ export function gate<TInput, TOutput>(
     };
     const audit = resolveAuditLogger(policy);
     const auditInput = redactForLogs(input, policy);
+    let approvalMetadata: Record<string, unknown> | undefined;
 
     const decision = evaluatePolicy(policy, input);
     if (!decision.allowed) {
@@ -61,19 +64,35 @@ export function gate<TInput, TOutput>(
     }
 
     if (policy.requireApproval) {
-      const error = approvalRequiredError(policy);
-      await safeAudit(audit, {
-        timestamp: new Date().toISOString(),
-        tool: policy.name,
-        risk: ctx.risk,
-        decision: "blocked",
-        requestId: ctx.requestId,
-        durationMs: createMeta(ctx).durationMs,
-        reason: error.code,
-        input: auditInput,
-        metadata: policy.metadata
-      });
-      return { ok: false, error, meta: createMeta(ctx) };
+      if (!policy.approval) {
+        const error = approvalRequiredError(policy);
+        await auditBlocked(audit, policy, ctx, auditInput, error.code);
+        return { ok: false, error, meta: createMeta(ctx) };
+      }
+
+      try {
+        const rawDecision = await policy.approval({
+          input,
+          requestId: ctx.requestId,
+          toolName: ctx.toolName,
+          risk: ctx.risk,
+          policy
+        });
+        const decision =
+          typeof rawDecision === "boolean" ? { approved: rawDecision } : rawDecision;
+
+        if (!decision.approved) {
+          const error = approvalDeniedError(policy, decision.reason);
+          await auditBlocked(audit, policy, ctx, auditInput, error.code, decision.metadata);
+          return { ok: false, error, meta: createMeta(ctx) };
+        }
+
+        approvalMetadata = decision.metadata;
+      } catch (error) {
+        const normalizedError = approvalError(policy, error);
+        await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+        return { ok: false, error: normalizedError, meta: createMeta(ctx) };
+      }
     }
 
     const rateLimitDecision = rateLimiter?.check();
@@ -111,9 +130,10 @@ export function gate<TInput, TOutput>(
         decision: "allowed",
         requestId: ctx.requestId,
         durationMs: createMeta(ctx).durationMs,
+        reason: policy.requireApproval ? "APPROVED" : undefined,
         input: auditInput,
         outputSummary: summarizeOutput(redactedOutput),
-        metadata: policy.metadata
+        metadata: mergeMetadata(policy.metadata, approvalMetadata)
       });
 
       return { ok: true, data: redactedOutput, meta: createMeta(ctx) };
@@ -127,6 +147,37 @@ export function gate<TInput, TOutput>(
       return { ok: false, error: normalizedError, meta: createMeta(ctx) };
     }
   };
+}
+
+async function auditBlocked(
+  audit: AuditLogger,
+  policy: ToolPolicy,
+  ctx: ToolGateContext,
+  input: unknown,
+  reason: string,
+  approvalMetadata?: Record<string, unknown>
+): Promise<void> {
+  await safeAudit(audit, {
+    timestamp: new Date().toISOString(),
+    tool: policy.name,
+    risk: ctx.risk,
+    decision: "blocked",
+    requestId: ctx.requestId,
+    durationMs: createMeta(ctx).durationMs,
+    reason,
+    input,
+    metadata: mergeMetadata(policy.metadata, approvalMetadata)
+  });
+}
+
+function mergeMetadata(
+  policyMetadata?: Record<string, unknown>,
+  approvalMetadata?: Record<string, unknown>
+): Record<string, unknown> | undefined {
+  if (!policyMetadata && !approvalMetadata) {
+    return undefined;
+  }
+  return { ...policyMetadata, ...approvalMetadata };
 }
 
 function resolveAuditLogger(policy: ToolPolicy): AuditLogger {

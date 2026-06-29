@@ -21,6 +21,26 @@ export function approvalRequiredError(policy: ToolPolicy): ToolGateError {
   };
 }
 
+export function approvalDeniedError(policy: ToolPolicy, reason?: string): ToolGateError {
+  return {
+    type: "approval_denied",
+    code: "APPROVAL_DENIED",
+    message: `Tool '${policy.name}' approval was denied.`,
+    details: reason ? { reason } : undefined
+  };
+}
+
+export function approvalError(policy: ToolPolicy, error: unknown): ToolGateError {
+  return {
+    type: "approval_error",
+    code: "APPROVAL_ERROR",
+    message: `Tool '${policy.name}' approval provider failed.`,
+    details: {
+      message: error instanceof Error ? error.message : String(error)
+    }
+  };
+}
+
 export function policyViolationError(policy: ToolPolicy, decision: PolicyDecision): ToolGateError {
   return {
     type: "policy_violation",
