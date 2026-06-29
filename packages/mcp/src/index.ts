@@ -1,6 +1,11 @@
 export { gate } from "./gate/gate.js";
 export { createAuditLogger } from "./audit/jsonlAuditLogger.js";
 export { createManifest } from "./manifest/manifest.js";
+export {
+  destructiveFilesystemPolicy,
+  externalApiPolicy,
+  readOnlyFilesystemPolicy
+} from "./presets/presets.js";
 export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
 
@@ -12,6 +17,7 @@ export type {
   ToolGateResult,
   ToolInputExtractor,
   ProtectedToolHandler,
+  RateLimitOptions,
   ToolHandler,
   ToolPolicy,
   ToolRisk

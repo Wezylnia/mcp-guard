@@ -5,6 +5,11 @@ export type ToolRisk = "read" | "write" | "external" | "destructive";
 
 export type ToolInputExtractor<T = string> = (input: unknown) => T | T[] | undefined;
 
+export interface RateLimitOptions {
+  max: number;
+  windowMs: number;
+}
+
 export interface ToolPolicy {
   name: string;
   description?: string;
@@ -19,6 +24,7 @@ export interface ToolPolicy {
   allowedCommands?: string[];
   deniedCommands?: string[];
   extractCommands?: ToolInputExtractor;
+  rateLimit?: RateLimitOptions;
   timeoutMs?: number;
   redact?: boolean | RedactionOptions;
   audit?: boolean | AuditLogger;
@@ -46,6 +52,7 @@ export type ProtectedToolHandler<TInput, TOutput> = (
 export type ToolGateErrorType =
   | "policy_violation"
   | "approval_required"
+  | "rate_limited"
   | "timeout"
   | "handler_error"
   | "redaction_error"

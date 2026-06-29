@@ -2,6 +2,7 @@ import type { AuditLogger } from "../audit/auditLogger.js";
 import { createAuditLogger } from "../audit/jsonlAuditLogger.js";
 import { noopAuditLogger } from "../audit/noopAuditLogger.js";
 import { evaluatePolicy } from "../policy/evaluatePolicy.js";
+import { createRateLimiter } from "../rateLimit/rateLimiter.js";
 import { redact } from "../redaction/redact.js";
 import { ToolTimeoutError, withTimeout } from "../timeout/withTimeout.js";
 import { createRequestId } from "../utils/createRequestId.js";
@@ -11,6 +12,7 @@ import {
   createMeta,
   handlerError,
   policyViolationError,
+  rateLimitedError,
   redactionError,
   timeoutError
 } from "./result.js";
@@ -26,6 +28,8 @@ export function gate<TInput, TOutput>(
   policy: ToolPolicy,
   handler: ToolHandler<TInput, TOutput>
 ): ProtectedToolHandler<TInput, ToolGateResult<TOutput>> {
+  const rateLimiter = createRateLimiter(policy.rateLimit);
+
   return async (input: TInput) => {
     const controller = new AbortController();
     const ctx: ToolGateContext = {
@@ -58,6 +62,23 @@ export function gate<TInput, TOutput>(
 
     if (policy.requireApproval) {
       const error = approvalRequiredError(policy);
+      await safeAudit(audit, {
+        timestamp: new Date().toISOString(),
+        tool: policy.name,
+        risk: ctx.risk,
+        decision: "blocked",
+        requestId: ctx.requestId,
+        durationMs: createMeta(ctx).durationMs,
+        reason: error.code,
+        input: auditInput,
+        metadata: policy.metadata
+      });
+      return { ok: false, error, meta: createMeta(ctx) };
+    }
+
+    const rateLimitDecision = rateLimiter?.check();
+    if (rateLimitDecision && !rateLimitDecision.allowed) {
+      const error = rateLimitedError(policy, rateLimitDecision.retryAfterMs ?? 0);
       await safeAudit(audit, {
         timestamp: new Date().toISOString(),
         tool: policy.name,

@@ -40,6 +40,17 @@ export function timeoutError(policy: ToolPolicy, timeoutMs: number): ToolGateErr
   };
 }
 
+export function rateLimitedError(policy: ToolPolicy, retryAfterMs: number): ToolGateError {
+  return {
+    type: "rate_limited",
+    code: "RATE_LIMITED",
+    message: `Tool '${policy.name}' exceeded rate limit.`,
+    details: {
+      retryAfterMs
+    }
+  };
+}
+
 export function handlerError(policy: ToolPolicy, error: unknown): ToolGateError {
   return {
     type: "handler_error",
