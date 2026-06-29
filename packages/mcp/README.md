@@ -15,6 +15,9 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 - this tool is `read`, `write`, `external`, or `destructive`
 - this tool requires approval before execution
 - this tool may only access specific file paths
+- this tool may only call specific network domains
+- this tool may only run specific command strings
+- this tool can be rate limited in memory
 - this tool must time out after a fixed duration
 - this tool output and audit logs should redact secrets
 - this tool call should be written to a JSONL audit log
@@ -86,6 +89,55 @@ Rules:
 - traversal and absolute paths are blocked
 - if `allowedPaths` is set, paths outside it are denied
 
+## Network Policy
+
+```ts
+gate(
+  {
+    name: "fetch_url",
+    risk: "external",
+    allowedDomains: ["api.github.com"],
+    deniedDomains: ["metadata.google.internal"]
+  },
+  async ({ url }) => fetch(url)
+);
+```
+
+Supported default URL input keys are `url`, `uri`, `href`, `endpoint`, and `targetUrl`. Use `extractUrls` for custom input shapes.
+
+## Command Policy
+
+```ts
+gate(
+  {
+    name: "run_command",
+    risk: "destructive",
+    allowedCommands: ["npm test", "npm run build"],
+    deniedCommands: ["npm publish*"]
+  },
+  async ({ command }) => runCommand(command)
+);
+```
+
+Supported default command input keys are `command`, `cmd`, `script`, and `shellCommand`. Use `extractCommands` for custom input shapes.
+
+## Rate Limit
+
+```ts
+gate(
+  {
+    name: "search_docs",
+    rateLimit: {
+      max: 20,
+      windowMs: 60_000
+    }
+  },
+  handler
+);
+```
+
+Rate limiting is in-memory per protected handler instance.
+
 ## Public API
 
 ```ts
@@ -93,6 +145,9 @@ export {
   gate,
   createAuditLogger,
   createManifest,
+  destructiveFilesystemPolicy,
+  externalApiPolicy,
+  readOnlyFilesystemPolicy,
   redact,
   evaluatePolicy
 };
@@ -111,4 +166,4 @@ Important limitations:
 
 ## Status
 
-Early MVP for TypeScript MCP servers. ESM-first, Node.js 18+.
+v0.2 development for TypeScript MCP servers. ESM-first, Node.js 18+.

@@ -82,6 +82,11 @@ If the agent asks for `.env`, the handler is not executed:
 - risk levels: `read`, `write`, `external`, `destructive`
 - approval-required blocking for dangerous tools
 - path allowlists and denylists with deny-first behavior
+- network domain allowlists and denylists
+- command allowlists and denylists
+- in-memory rate limiting per protected handler
+- custom input extractors for paths, URLs, and commands
+- policy presets for common filesystem and external API tools
 - timeout handling with `AbortSignal`
 - default redaction for common secrets and tokens
 - append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
@@ -94,7 +99,7 @@ ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval 
 
 ## Status
 
-Early MVP for TypeScript MCP servers. ESM-first, Node.js 18+.
+v0.2 development for TypeScript MCP servers. ESM-first, Node.js 18+.
 
 ## Development
 

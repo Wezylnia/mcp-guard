@@ -12,6 +12,14 @@ export interface PolicyManifestTool {
   requiresApproval: boolean;
   allowedPaths?: string[];
   deniedPaths?: string[];
+  allowedDomains?: string[];
+  deniedDomains?: string[];
+  allowedCommands?: string[];
+  deniedCommands?: string[];
+  rateLimit?: {
+    max: number;
+    windowMs: number;
+  };
   audit: boolean;
   timeoutMs?: number;
   metadata?: Record<string, unknown>;
@@ -30,6 +38,11 @@ export function createManifest(
       requiresApproval: policy.requireApproval ?? false,
       allowedPaths: policy.allowedPaths,
       deniedPaths: policy.deniedPaths,
+      allowedDomains: policy.allowedDomains,
+      deniedDomains: policy.deniedDomains,
+      allowedCommands: policy.allowedCommands,
+      deniedCommands: policy.deniedCommands,
+      rateLimit: policy.rateLimit,
       audit: Boolean(policy.audit),
       timeoutMs: policy.timeoutMs,
       metadata: policy.metadata

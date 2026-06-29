@@ -10,6 +10,14 @@ describe("manifest", () => {
           risk: "read",
           allowedPaths: ["src/**"],
           deniedPaths: [".env"],
+          allowedDomains: ["api.github.com"],
+          deniedDomains: ["metadata.google.internal"],
+          allowedCommands: ["npm test"],
+          deniedCommands: ["npm publish*"],
+          rateLimit: {
+            max: 10,
+            windowMs: 60_000
+          },
           audit: true,
           timeoutMs: 5000
         },
@@ -32,6 +40,14 @@ describe("manifest", () => {
           requiresApproval: false,
           allowedPaths: ["src/**"],
           deniedPaths: [".env"],
+          allowedDomains: ["api.github.com"],
+          deniedDomains: ["metadata.google.internal"],
+          allowedCommands: ["npm test"],
+          deniedCommands: ["npm publish*"],
+          rateLimit: {
+            max: 10,
+            windowMs: 60_000
+          },
           audit: true,
           timeoutMs: 5000,
           metadata: undefined
@@ -43,6 +59,11 @@ describe("manifest", () => {
           requiresApproval: true,
           allowedPaths: undefined,
           deniedPaths: undefined,
+          allowedDomains: undefined,
+          deniedDomains: undefined,
+          allowedCommands: undefined,
+          deniedCommands: undefined,
+          rateLimit: undefined,
           audit: false,
           timeoutMs: undefined,
           metadata: undefined

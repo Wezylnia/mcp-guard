@@ -12,6 +12,12 @@ const manifest = createManifest(
       risk: "read",
       allowedPaths: ["src/**"],
       deniedPaths: [".env"],
+      allowedDomains: ["api.github.com"],
+      allowedCommands: ["npm test"],
+      rateLimit: {
+        max: 10,
+        windowMs: 60000
+      },
       audit: true,
       timeoutMs: 5000
     }
