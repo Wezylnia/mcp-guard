@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.0.0 - 2026-06-30
+
+### Added
+
+- Versioned `1.0` policy-config and manifest JSON Schemas with strict validators.
+- Config and manifest migration API and CLI commands for pre-v1 files.
+- `createToolGate()` registry with shared defaults, duplicate detection, and manifest collection.
+- Keyed rate limits, shared/custom stores, namespaces, and fail-closed store errors.
+- `gateMcpHandler()` for preserving MCP SDK request context.
+- Dependency-free OpenTelemetry span observer.
+- Public API contract tests and a v1 migration guide.
+
+### Changed
+
+- Manifests require `schemaVersion: "1.0"` and per-tool `redact` state.
+- Manifest validation rejects unknown fields and duplicate tool names.
+- Manifest security comparison detects disabled redaction and weakened keyed rate limits.
+- The GitHub policy-check Action now pins `toolgate-mcp@1.0.0`.
+
+### Breaking
+
+- Pre-v1 configs and manifests must be migrated or regenerated before validation.
+- Static config validation is strict; unknown fields are no longer ignored.
+
 ## 0.7.0 - 2026-06-30
 
 ### Added

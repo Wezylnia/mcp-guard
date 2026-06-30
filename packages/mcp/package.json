@@ -1,6 +1,6 @@
 {
   "name": "toolgate-mcp",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "Policy, approval, redaction, timeout, and audit middleware for MCP server tools.",
   "type": "module",
   "sideEffects": false,
@@ -46,7 +46,9 @@
     "cli",
     "manifest",
     "github-actions",
-    "observability"
+    "observability",
+    "opentelemetry",
+    "rate-limit"
   ],
   "license": "MIT",
   "repository": {

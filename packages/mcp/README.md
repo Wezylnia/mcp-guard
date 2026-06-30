@@ -225,4 +225,4 @@ Important limitations:
 
 ## Status
 
-v0.7 for TypeScript MCP servers. ESM-first, Node.js 18+.
+Stable v1 for TypeScript MCP servers. ESM-first, Node.js 18+.

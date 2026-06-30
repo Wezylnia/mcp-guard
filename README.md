@@ -113,7 +113,7 @@ ToolGateKit is not an MCP server, MCP client, gateway, proxy, sandbox, approval 
 
 ## Status
 
-v0.7 for TypeScript MCP servers. ESM-first, Node.js 18+.
+Stable v1 for TypeScript MCP servers. ESM-first, Node.js 18+.
 
 ## CLI
 
@@ -161,7 +161,7 @@ npm audit
 
 Npm publishing is automated only from GitHub Releases. Normal commits and pushes do not publish.
 
-Create a release tag that matches the package version, such as `v0.7.1`, and the publish workflow will run tests before publishing `toolgate-mcp` to npm. See [Release Process](docs/release.md).
+Create a release tag that matches the package version, such as `v1.0.1`, and the publish workflow will run tests before publishing `toolgate-mcp` to npm. See [Release Process](docs/release.md).
 
 ## Docs
 
