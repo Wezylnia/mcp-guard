@@ -151,10 +151,13 @@ export {
   gate,
   gateMcp,
   toMcpToolResult,
+  evaluateCustomRules,
+  emitToolGateEvent,
   createAuditLogger,
   readAuditLog,
   summarizeAudit,
   createManifest,
+  compareManifests,
   destructiveFilesystemPolicy,
   externalApiPolicy,
   readOnlyFilesystemPolicy,
@@ -207,4 +210,4 @@ Important limitations:
 
 ## Status
 
-v0.5 for TypeScript MCP servers. ESM-first, Node.js 18+.
+v0.7 for TypeScript MCP servers. ESM-first, Node.js 18+.

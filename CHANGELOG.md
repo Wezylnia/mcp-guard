@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.7.0 - 2026-06-30
+
+### Added
+
+- Fail-closed synchronous and asynchronous custom policy rules.
+- Privacy-conscious lifecycle observer events for telemetry adapters.
+- Security-aware manifest comparison API and `check-manifest` CLI command.
+- Reusable GitHub composite action for pull-request policy checks.
+
+### Changed
+
+- Policy manifests now expose custom rule names for review without serializing executable code.
+- Malformed custom rule decisions fail closed as `POLICY_RULE_ERROR`.
+
 ## 0.5.0 - 2026-06-29
 
 ### Added

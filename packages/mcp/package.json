@@ -1,6 +1,6 @@
 {
   "name": "toolgate-mcp",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "description": "Policy, approval, redaction, timeout, and audit middleware for MCP server tools.",
   "type": "module",
   "sideEffects": false,
@@ -44,7 +44,9 @@
     "approval",
     "guardrails",
     "cli",
-    "manifest"
+    "manifest",
+    "github-actions",
+    "observability"
   ],
   "license": "MIT",
   "repository": {
