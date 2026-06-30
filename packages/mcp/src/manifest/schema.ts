@@ -45,9 +45,10 @@ export const policyManifestSchema = {
             additionalProperties: false,
             required: ["max", "windowMs"],
             properties: {
-              max: { type: "number", minimum: 1 },
+              max: { type: "integer", minimum: 1 },
               windowMs: { type: "number", minimum: 1 },
-              keyed: { type: "boolean" }
+              keyed: { type: "boolean" },
+              namespace: { type: "string", minLength: 1 }
             }
           },
           audit: { type: "boolean" },
@@ -159,7 +160,7 @@ function validateRateLimit(
     return;
   }
 
-  if (!isPositiveNumber(value.max)) {
+  if (!Number.isInteger(value.max) || !isPositiveNumber(value.max)) {
     issues.push({ path: `${path}.max`, message: "rateLimit.max must be a positive number." });
   }
 
@@ -168,6 +169,9 @@ function validateRateLimit(
   }
   if (value.keyed !== undefined && typeof value.keyed !== "boolean") {
     issues.push({ path: `${path}.keyed`, message: "rateLimit.keyed must be a boolean." });
+  }
+  if (value.namespace !== undefined && (typeof value.namespace !== "string" || value.namespace.length === 0)) {
+    issues.push({ path: `${path}.namespace`, message: "rateLimit.namespace must be a non-empty string." });
   }
 }
 

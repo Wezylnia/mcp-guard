@@ -10,3 +10,5 @@ Important limitations:
 - It cannot sandbox Node.js execution.
 - Timeout cannot always kill underlying work if the handler ignores `AbortSignal`.
 - Approval UI must be implemented by the surrounding host or application.
+- The default rate-limit store is process-local. High-cardinality untrusted keys can grow memory;
+  distributed deployments should supply a bounded, atomic external `RateLimitStore`.

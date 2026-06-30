@@ -134,6 +134,13 @@ function compareRateLimit(
   }
   const previous = base.rateLimit!;
   const current = head.rateLimit!;
+  if (Boolean(previous.keyed) !== Boolean(current.keyed)) {
+    const loosened = Boolean(previous.keyed) && !current.keyed;
+    changes.push(fieldChange(loosened ? "danger" : "info", loosened ? "RATE_LIMIT_KEY_REMOVED" : "RATE_LIMIT_KEY_ADDED", head.name, "rateLimit.keyed", `Tool '${head.name}' keyed rate limiting changed.`, Boolean(previous.keyed), Boolean(current.keyed)));
+  }
+  if (previous.namespace !== current.namespace) {
+    changes.push(fieldChange("warning", "RATE_LIMIT_NAMESPACE_CHANGED", head.name, "rateLimit.namespace", `Tool '${head.name}' rate limit namespace changed.`, previous.namespace, current.namespace));
+  }
   if (previous.max !== current.max) {
     const loosened = current.max > previous.max;
     changes.push(fieldChange(loosened ? "danger" : "info", loosened ? "RATE_LIMIT_MAX_INCREASED" : "RATE_LIMIT_MAX_DECREASED", head.name, "rateLimit.max", `Tool '${head.name}' rate limit maximum changed.`, previous.max, current.max));

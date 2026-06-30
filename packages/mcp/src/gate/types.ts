@@ -1,5 +1,6 @@
 import type { AuditLogger } from "../audit/auditLogger.js";
 import type { RedactionOptions } from "../redaction/redact.js";
+import type { RateLimitStore } from "../rateLimit/rateLimiter.js";
 
 export type ToolRisk = "read" | "write" | "external" | "destructive";
 
@@ -8,6 +9,9 @@ export type ToolInputExtractor<T = string> = (input: unknown) => T | T[] | undef
 export interface RateLimitOptions {
   max: number;
   windowMs: number;
+  key?: (input: unknown) => string | undefined;
+  namespace?: string;
+  store?: RateLimitStore;
 }
 
 export interface ApprovalRequest<TInput = unknown> {
@@ -109,6 +113,7 @@ export type ToolGateErrorType =
   | "approval_denied"
   | "approval_error"
   | "rate_limited"
+  | "rate_limit_error"
   | "timeout"
   | "handler_error"
   | "redaction_error"

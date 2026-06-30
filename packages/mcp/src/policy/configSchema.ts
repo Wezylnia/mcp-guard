@@ -20,7 +20,7 @@ export interface PolicyConfigTool {
   allowedCommands?: string[];
   deniedCommands?: string[];
   customRules?: string[];
-  rateLimit?: { max: number; windowMs: number; keyed?: boolean };
+  rateLimit?: { max: number; windowMs: number; keyed?: boolean; namespace?: string };
   timeoutMs?: number;
   redact?: boolean;
   audit?: boolean;
@@ -64,7 +64,8 @@ export const policyConfigSchema = {
             properties: {
               max: { type: "integer", minimum: 1 },
               windowMs: { type: "number", exclusiveMinimum: 0 },
-              keyed: { type: "boolean" }
+              keyed: { type: "boolean" },
+              namespace: { type: "string", minLength: 1 }
             }
           },
           timeoutMs: { type: "number", exclusiveMinimum: 0 },
@@ -187,11 +188,12 @@ function validateRateLimit(value: unknown, path: string, issues: PolicyValidatio
     return;
   }
   for (const key of Object.keys(value)) {
-    if (!["max", "windowMs", "keyed"].includes(key)) issues.push({ path: `${path}.${key}`, message: "Unknown rate-limit field." });
+    if (!["max", "windowMs", "keyed", "namespace"].includes(key)) issues.push({ path: `${path}.${key}`, message: "Unknown rate-limit field." });
   }
   if (!Number.isInteger(value.max) || !isPositive(value.max)) issues.push({ path: `${path}.max`, message: "max must be a positive integer." });
   if (!isPositive(value.windowMs)) issues.push({ path: `${path}.windowMs`, message: "windowMs must be a positive number." });
   if (value.keyed !== undefined && typeof value.keyed !== "boolean") issues.push({ path: `${path}.keyed`, message: "keyed must be a boolean." });
+  if (value.namespace !== undefined && (typeof value.namespace !== "string" || value.namespace.length === 0)) issues.push({ path: `${path}.namespace`, message: "namespace must be a non-empty string." });
 }
 
 function invalid(path: string, message: string): PolicyValidationResult {

@@ -105,6 +105,7 @@ function clonePolicy(policy: ToolPolicy): ToolPolicy {
     allowedCommands: copy(policy.allowedCommands),
     deniedCommands: copy(policy.deniedCommands),
     rules: policy.rules ? [...policy.rules] : undefined,
+    rateLimit: policy.rateLimit ? { ...policy.rateLimit } : undefined,
     metadata: policy.metadata ? { ...policy.metadata } : undefined
   };
 }

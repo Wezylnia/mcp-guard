@@ -114,7 +114,23 @@ gate(
 );
 ```
 
-Rate limiting is in-memory per protected handler instance.
+Rate limiting uses an in-memory store by default. Use a key extractor for independent tenant or
+user quotas:
+
+```ts
+rateLimit: {
+  max: 100,
+  windowMs: 60_000,
+  key: (input) => input.tenantId
+}
+```
+
+Use `createMemoryRateLimitStore()` and a shared `namespace` to apply one quota across multiple
+handlers. Implement `RateLimitStore.consume()` to use Redis, a database, or another atomic shared
+backend. Store and key-extractor failures fail closed as `RATE_LIMIT_ERROR`.
+
+The built-in store is process-local and retains one entry per key until cleared. Use an external
+bounded store for multi-process deployments or untrusted high-cardinality keys.
 
 ## Custom Rules
 

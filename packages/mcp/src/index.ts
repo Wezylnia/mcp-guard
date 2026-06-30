@@ -23,6 +23,11 @@ export { evaluateCustomRules, PolicyRuleExecutionError } from "./policy/customPo
 export { emitToolGateEvent } from "./observability/observer.js";
 export { createToolGate, DuplicateToolPolicyError } from "./registry/toolGate.js";
 export {
+  createMemoryRateLimitStore,
+  createRateLimiter,
+  createRateLimitKey
+} from "./rateLimit/rateLimiter.js";
+export {
   assertPolicy,
   InvalidToolPolicyError,
   validatePolicies,
@@ -82,3 +87,9 @@ export type {
   McpToolResult
 } from "./mcp/adapter.js";
 export type { RedactionOptions } from "./redaction/redact.js";
+export type {
+  MemoryRateLimitStore,
+  RateLimitDecision,
+  RateLimiter,
+  RateLimitStore
+} from "./rateLimit/rateLimiter.js";

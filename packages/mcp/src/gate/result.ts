@@ -83,6 +83,15 @@ export function rateLimitedError(policy: ToolPolicy, retryAfterMs: number): Tool
   };
 }
 
+export function rateLimitError(policy: ToolPolicy, error: unknown): ToolGateError {
+  return {
+    type: "rate_limit_error",
+    code: "RATE_LIMIT_ERROR",
+    message: `Tool '${policy.name}' rate limit evaluation failed.`,
+    details: { message: error instanceof Error ? error.message : String(error) }
+  };
+}
+
 export function handlerError(policy: ToolPolicy, error: unknown): ToolGateError {
   return {
     type: "handler_error",

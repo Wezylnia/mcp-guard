@@ -22,6 +22,7 @@ export interface PolicyManifestTool {
     max: number;
     windowMs: number;
     keyed?: boolean;
+    namespace?: string;
   };
   audit: boolean;
   timeoutMs?: number;
@@ -47,7 +48,12 @@ export function createManifest(
       allowedCommands: policy.allowedCommands,
       deniedCommands: policy.deniedCommands,
       customRules: policy.rules?.map((rule) => rule.name),
-      rateLimit: policy.rateLimit,
+      rateLimit: policy.rateLimit ? {
+        max: policy.rateLimit.max,
+        windowMs: policy.rateLimit.windowMs,
+        keyed: Boolean(policy.rateLimit.key),
+        namespace: policy.rateLimit.namespace
+      } : undefined,
       audit: Boolean(policy.audit),
       timeoutMs: policy.timeoutMs,
       metadata: policy.metadata

@@ -153,6 +153,15 @@ function validateRateLimit(value: unknown, path: string, issues: PolicyValidatio
   if (!isPositiveNumber(value.windowMs)) {
     issues.push({ path: `${path}.windowMs`, message: "windowMs must be a positive number." });
   }
+  if (value.key !== undefined && typeof value.key !== "function") {
+    issues.push({ path: `${path}.key`, message: "key must be a function." });
+  }
+  if (value.namespace !== undefined && (typeof value.namespace !== "string" || value.namespace.length === 0)) {
+    issues.push({ path: `${path}.namespace`, message: "namespace must be a non-empty string." });
+  }
+  if (value.store !== undefined && (!isRecord(value.store) || typeof value.store.consume !== "function")) {
+    issues.push({ path: `${path}.store`, message: "store must provide a consume function." });
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

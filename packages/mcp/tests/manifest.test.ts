@@ -45,9 +45,12 @@ describe("manifest", () => {
           deniedDomains: ["metadata.google.internal"],
           allowedCommands: ["npm test"],
           deniedCommands: ["npm publish*"],
+          customRules: undefined,
           rateLimit: {
             max: 10,
-            windowMs: 60_000
+            windowMs: 60_000,
+            keyed: false,
+            namespace: undefined
           },
           audit: true,
           timeoutMs: 5000,
@@ -64,6 +67,7 @@ describe("manifest", () => {
           deniedDomains: undefined,
           allowedCommands: undefined,
           deniedCommands: undefined,
+          customRules: undefined,
           rateLimit: undefined,
           audit: false,
           timeoutMs: undefined,

@@ -5,7 +5,7 @@ import { evaluatePolicy } from "../policy/evaluatePolicy.js";
 import { evaluateCustomRules, PolicyRuleExecutionError } from "../policy/customPolicy.js";
 import { emitToolGateEvent } from "../observability/observer.js";
 import { assertPolicy } from "../policy/validatePolicy.js";
-import { createRateLimiter } from "../rateLimit/rateLimiter.js";
+import { createRateLimiter, createRateLimitKey } from "../rateLimit/rateLimiter.js";
 import { redact } from "../redaction/redact.js";
 import { ToolTimeoutError, withTimeout } from "../timeout/withTimeout.js";
 import { createRequestId } from "../utils/createRequestId.js";
@@ -19,6 +19,7 @@ import {
   policyViolationError,
   policyRuleError,
   rateLimitedError,
+  rateLimitError,
   redactionError,
   timeoutError
 } from "./result.js";
@@ -123,7 +124,17 @@ export function gate<TInput, TOutput>(
       }
     }
 
-    const rateLimitDecision = rateLimiter?.check();
+    let rateLimitDecision;
+    try {
+      rateLimitDecision = policy.rateLimit && rateLimiter
+        ? await rateLimiter.check(createRateLimitKey(policy.rateLimit, input, policy.name))
+        : undefined;
+    } catch (error) {
+      const normalizedError = rateLimitError(policy, error);
+      await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+      await emitToolGateEvent(policy, ctx, { type: "failed", code: normalizedError.code });
+      return { ok: false, error: normalizedError, meta: createMeta(ctx) };
+    }
     if (rateLimitDecision && !rateLimitDecision.allowed) {
       const error = rateLimitedError(policy, rateLimitDecision.retryAfterMs ?? 0);
       await safeAudit(audit, {

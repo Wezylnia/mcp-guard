@@ -87,7 +87,7 @@ If the agent asks for `.env`, the handler is not executed:
 - path allowlists and denylists with deny-first behavior
 - network domain allowlists and denylists
 - command allowlists and denylists
-- in-memory rate limiting per protected handler
+- keyed rate limiting with in-memory or custom shared stores
 - custom input extractors for paths, URLs, and commands
 - fail-closed sync or async custom policy rules for application-specific checks
 - policy presets for common filesystem and external API tools

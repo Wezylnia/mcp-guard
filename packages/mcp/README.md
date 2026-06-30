@@ -145,7 +145,8 @@ gate(
 );
 ```
 
-Rate limiting is in-memory per protected handler instance.
+Rate limiting defaults to an in-memory store. Add `key` for per-user or per-tenant quotas. Share a
+store and `namespace` across handlers, or implement `RateLimitStore` for an atomic external backend.
 
 ## Public API
 
