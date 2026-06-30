@@ -27,6 +27,8 @@ const manifest = createManifest(
 ```
 
 The manifest is intended for developer visibility. It is not an authorization system and does not enforce policy by itself.
+Every v1 manifest includes `"schemaVersion": "1.0"`. Consumers should reject unknown major
+schema versions instead of guessing compatibility.
 
 ## Validation
 
@@ -43,6 +45,9 @@ The schema is also available through the package subpath:
 ```ts
 import { policyManifestSchema } from "toolgate-mcp/schema";
 ```
+
+The same subpath exports `policyConfigSchema` for static JSON policy files. Use
+`migrateManifest()` and `migratePolicyConfig()` to validate and upgrade pre-v1 files.
 
 ## CLI
 

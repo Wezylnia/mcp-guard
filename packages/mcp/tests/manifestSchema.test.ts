@@ -28,6 +28,7 @@ describe("manifest schema", () => {
 
   it("reports invalid manifest fields", () => {
     const result = validateManifest({
+      schemaVersion: "1.0",
       tools: [
         {
           name: "",
@@ -57,6 +58,6 @@ describe("manifest schema", () => {
 
   it("exports a JSON schema object", () => {
     expect(policyManifestSchema.title).toBe("ToolGateKit Policy Manifest");
-    expect(policyManifestSchema.required).toEqual(["tools"]);
+    expect(policyManifestSchema.required).toEqual(["schemaVersion", "tools"]);
   });
 });

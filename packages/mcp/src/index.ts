@@ -2,9 +2,16 @@ export { gate } from "./gate/gate.js";
 export { createAuditLogger } from "./audit/jsonlAuditLogger.js";
 export { readAuditLog, summarizeAudit } from "./audit/readAuditLog.js";
 export { createManifest } from "./manifest/manifest.js";
+export { migrateManifest, InvalidPolicyManifestError } from "./manifest/migrate.js";
 export { compareManifests } from "./manifest/compare.js";
 export { gateMcp, isMcpToolResult, toMcpToolResult } from "./mcp/adapter.js";
 export { policyManifestSchema, validateManifest } from "./manifest/schema.js";
+export {
+  createManifestFromConfig,
+  policyConfigSchema,
+  validatePolicyConfig
+} from "./policy/configSchema.js";
+export { migratePolicyConfig } from "./policy/migrateConfig.js";
 export {
   destructiveFilesystemPolicy,
   externalApiPolicy,
@@ -58,6 +65,7 @@ export type {
   ManifestChangeSeverity,
   ManifestComparison
 } from "./manifest/compare.js";
+export type { PolicyConfig, PolicyConfigTool } from "./policy/configSchema.js";
 export type {
   PolicyValidationIssue,
   PolicyValidationResult

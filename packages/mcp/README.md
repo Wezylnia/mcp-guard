@@ -184,6 +184,7 @@ The config file for `toolgate manifest` is JSON:
 
 ```json
 {
+  "schemaVersion": "1.0",
   "name": "filesystem-mcp",
   "tools": [
     {

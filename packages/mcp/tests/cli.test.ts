@@ -30,6 +30,7 @@ describe("cli", () => {
     await writeFile(
       configPath,
       JSON.stringify({
+        schemaVersion: "1.0",
         name: "example-server",
         tools: [
           {
@@ -56,6 +57,7 @@ describe("cli", () => {
     await writeFile(
       manifestPath,
       JSON.stringify({
+        schemaVersion: "1.0",
         tools: [
           {
             name: "fetch_url",
@@ -79,7 +81,7 @@ describe("cli", () => {
     const configPath = path.join(tempDir, "toolgate.config.json");
     await writeFile(
       configPath,
-      JSON.stringify({ tools: [{ name: "run", rateLimit: { max: 0, windowMs: 1000 } }] }),
+      JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "run", rateLimit: { max: 0, windowMs: 1000 } }] }),
       "utf8"
     );
     const io = createIo();
@@ -92,7 +94,7 @@ describe("cli", () => {
 
   it("returns errors for invalid manifests", async () => {
     const manifestPath = path.join(tempDir, "bad-manifest.json");
-    await writeFile(manifestPath, JSON.stringify({ tools: [{ name: "" }] }), "utf8");
+    await writeFile(manifestPath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "" }] }), "utf8");
     const io = createIo();
 
     const exitCode = await runCli(["validate-manifest", "--file", manifestPath], io);
@@ -130,8 +132,8 @@ describe("cli", () => {
   it("fails manifest checks when a protection is removed", async () => {
     const basePath = path.join(tempDir, "base.json");
     const headPath = path.join(tempDir, "head.json");
-    await writeFile(basePath, JSON.stringify({ tools: [{ name: "delete", risk: "destructive", requiresApproval: true, audit: true }] }), "utf8");
-    await writeFile(headPath, JSON.stringify({ tools: [{ name: "delete", risk: "destructive", requiresApproval: false, audit: true }] }), "utf8");
+    await writeFile(basePath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "delete", risk: "destructive", requiresApproval: true, audit: true }] }), "utf8");
+    await writeFile(headPath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "delete", risk: "destructive", requiresApproval: false, audit: true }] }), "utf8");
     const io = createIo();
 
     const exitCode = await runCli(["check-manifest", "--base", basePath, "--head", headPath, "--json"], io);
@@ -142,6 +144,30 @@ describe("cli", () => {
     expect(output.changes).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: "APPROVAL_DISABLED", severity: "danger" })
     ]));
+  });
+
+  it("migrates legacy config and manifest files", async () => {
+    const oldConfig = path.join(tempDir, "old-config.json");
+    const newConfig = path.join(tempDir, "new-config.json");
+    const oldManifest = path.join(tempDir, "old-manifest.json");
+    const newManifest = path.join(tempDir, "new-manifest.json");
+    await writeFile(oldConfig, JSON.stringify({ tools: [{ name: "read" }] }), "utf8");
+    await writeFile(oldManifest, JSON.stringify({ tools: [{ name: "read", risk: "read", requiresApproval: false, audit: false }] }), "utf8");
+
+    expect(await runCli(["migrate-config", "--file", oldConfig, "--out", newConfig], createIo())).toBe(0);
+    expect(await runCli(["migrate-manifest", "--file", oldManifest, "--out", newManifest], createIo())).toBe(0);
+    expect(JSON.parse(await readFile(newConfig, "utf8")).schemaVersion).toBe("1.0");
+    expect(JSON.parse(await readFile(newManifest, "utf8")).schemaVersion).toBe("1.0");
+  });
+
+  it("prints stable config and manifest schemas", async () => {
+    const configIo = createIo();
+    const manifestIo = createIo();
+
+    expect(await runCli(["schema", "--type", "config"], configIo)).toBe(0);
+    expect(await runCli(["schema", "--type", "manifest"], manifestIo)).toBe(0);
+    expect(JSON.parse(configIo.stdoutText()).properties.schemaVersion.const).toBe("1.0");
+    expect(JSON.parse(manifestIo.stdoutText()).properties.schemaVersion.const).toBe("1.0");
   });
 });
 

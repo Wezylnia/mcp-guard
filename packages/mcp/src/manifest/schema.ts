@@ -17,6 +17,7 @@ export const policyManifestSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
+    schemaVersion: { const: "1.0" },
     name: { type: "string" },
     tools: {
       type: "array",
@@ -45,7 +46,8 @@ export const policyManifestSchema = {
             required: ["max", "windowMs"],
             properties: {
               max: { type: "number", minimum: 1 },
-              windowMs: { type: "number", minimum: 1 }
+              windowMs: { type: "number", minimum: 1 },
+              keyed: { type: "boolean" }
             }
           },
           audit: { type: "boolean" },
@@ -55,7 +57,7 @@ export const policyManifestSchema = {
       }
     }
   },
-  required: ["tools"]
+  required: ["schemaVersion", "tools"]
 } as const;
 
 export function validateManifest(manifest: unknown): ManifestValidationResult {
@@ -63,6 +65,10 @@ export function validateManifest(manifest: unknown): ManifestValidationResult {
 
   if (!isRecord(manifest)) {
     return invalid("$", "Manifest must be an object.");
+  }
+
+  if (manifest.schemaVersion !== "1.0") {
+    issues.push({ path: "$.schemaVersion", message: "schemaVersion must be '1.0'." });
   }
 
   if ("name" in manifest && typeof manifest.name !== "string") {
@@ -160,6 +166,9 @@ function validateRateLimit(
   if (!isPositiveNumber(value.windowMs)) {
     issues.push({ path: `${path}.windowMs`, message: "rateLimit.windowMs must be a positive number." });
   }
+  if (value.keyed !== undefined && typeof value.keyed !== "boolean") {
+    issues.push({ path: `${path}.keyed`, message: "rateLimit.keyed must be a boolean." });
+  }
 }
 
 function stringArraySchema(): { type: "array"; items: { type: "string" } } {
@@ -183,3 +192,5 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function isPositiveNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
+
+export { policyConfigSchema } from "../policy/configSchema.js";

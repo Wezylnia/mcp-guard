@@ -73,5 +73,5 @@ describe("manifest comparison", () => {
 });
 
 function manifest(tool: PolicyManifest["tools"][number]): PolicyManifest {
-  return { name: "server", tools: [tool] };
+  return { schemaVersion: "1.0", name: "server", tools: [tool] };
 }

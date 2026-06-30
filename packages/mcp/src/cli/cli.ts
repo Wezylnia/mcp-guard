@@ -1,22 +1,22 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { readAuditLog, summarizeAudit } from "../audit/readAuditLog.js";
 import type { AuditDecision } from "../audit/auditLogger.js";
-import { createManifest } from "../manifest/manifest.js";
 import type { PolicyManifest } from "../manifest/manifest.js";
 import { compareManifests } from "../manifest/compare.js";
 import type { ManifestChangeSeverity } from "../manifest/compare.js";
-import { validateManifest } from "../manifest/schema.js";
-import { validatePolicies } from "../policy/validatePolicy.js";
-import type { ToolPolicy } from "../gate/types.js";
+import { policyManifestSchema, validateManifest } from "../manifest/schema.js";
+import {
+  createManifestFromConfig,
+  policyConfigSchema,
+  validatePolicyConfig,
+  type PolicyConfig
+} from "../policy/configSchema.js";
+import { migratePolicyConfig } from "../policy/migrateConfig.js";
+import { migrateManifest } from "../manifest/migrate.js";
 
 export interface CliIo {
   stdout: Pick<NodeJS.WriteStream, "write">;
   stderr: Pick<NodeJS.WriteStream, "write">;
-}
-
-export interface ManifestConfig {
-  name?: string;
-  tools: ToolPolicy[];
 }
 
 export async function runCli(
@@ -50,6 +50,18 @@ export async function runCli(
     return runCheckManifestCommand(rest, io);
   }
 
+  if (command === "migrate-manifest") {
+    return runMigrationCommand(rest, io, migrateManifest);
+  }
+
+  if (command === "migrate-config") {
+    return runMigrationCommand(rest, io, migratePolicyConfig);
+  }
+
+  if (command === "schema") {
+    return runSchemaCommand(rest, io);
+  }
+
   io.stderr.write(`Unknown command '${command}'.\n`);
   writeHelp(io.stderr);
   return 1;
@@ -64,14 +76,14 @@ async function runManifestCommand(args: string[], io: CliIo): Promise<number> {
     return 1;
   }
 
-  const config = await readJson<ManifestConfig>(configPath);
-  const validation = validatePolicies(config.tools);
+  const config = await readJson<unknown>(configPath);
+  const validation = validatePolicyConfig(config);
   if (!validation.valid) {
     writeIssues(validation.issues, io.stderr);
     return 1;
   }
 
-  const manifest = createManifest(config.tools, { name: config.name });
+  const manifest = createManifestFromConfig(config as PolicyConfig);
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
 
   const outPath = options.out ?? options.o;
@@ -92,14 +104,51 @@ async function runValidateConfigCommand(args: string[], io: CliIo): Promise<numb
     return 1;
   }
 
-  const config = await readJson<ManifestConfig>(configPath);
-  const result = validatePolicies(config.tools);
+  const config = await readJson<unknown>(configPath);
+  const result = validatePolicyConfig(config);
   if (result.valid) {
     io.stdout.write("Policy config is valid.\n");
     return 0;
   }
   writeIssues(result.issues, io.stderr);
   return 1;
+}
+
+async function runMigrationCommand(
+  args: string[],
+  io: CliIo,
+  migrate: (value: unknown) => unknown
+): Promise<number> {
+  const options = parseOptions(args);
+  const file = options.file ?? options.f;
+  const out = options.out ?? options.o;
+  if (!file || !out) {
+    io.stderr.write("Missing required --file and --out options.\n");
+    return 1;
+  }
+  try {
+    const migrated = migrate(await readJson<unknown>(file));
+    await writeFile(out, `${JSON.stringify(migrated, null, 2)}\n`, "utf8");
+    io.stdout.write(`Wrote ${out}.\n`);
+    return 0;
+  } catch (error) {
+    io.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    return 1;
+  }
+}
+
+async function runSchemaCommand(args: string[], io: CliIo): Promise<number> {
+  const options = parseOptions(args);
+  const type = options.type;
+  if (type !== "manifest" && type !== "config") {
+    io.stderr.write("--type must be manifest or config.\n");
+    return 1;
+  }
+  const serialized = `${JSON.stringify(type === "manifest" ? policyManifestSchema : policyConfigSchema, null, 2)}\n`;
+  const out = options.out ?? options.o;
+  if (out) await writeFile(out, serialized, "utf8");
+  else io.stdout.write(serialized);
+  return 0;
 }
 
 async function runValidateManifestCommand(args: string[], io: CliIo): Promise<number> {
@@ -244,6 +293,9 @@ Usage:
   toolgate validate-manifest --file policy-manifest.json
   toolgate audit --file .toolgate/audit.jsonl [--tool name] [--decision blocked] [--json]
   toolgate check-manifest --base before.json --head after.json [--fail-on danger] [--json]
+  toolgate migrate-manifest --file old.json --out policy-manifest.json
+  toolgate migrate-config --file old.json --out toolgate.config.json
+  toolgate schema --type manifest|config [--out schema.json]
 
 Commands:
   manifest           Create a policy manifest from a JSON config.
@@ -251,6 +303,9 @@ Commands:
   validate-manifest  Validate a policy manifest.
   audit              Filter and summarize a JSONL audit log.
   check-manifest     Detect security-relevant policy manifest changes.
+  migrate-manifest   Upgrade a pre-v1 manifest to schema version 1.0.
+  migrate-config     Upgrade a pre-v1 config to schema version 1.0.
+  schema             Print or write a stable v1 JSON Schema.
 `);
 }
 

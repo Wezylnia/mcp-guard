@@ -1,6 +1,7 @@
 import type { ToolPolicy } from "../gate/types.js";
 
 export interface PolicyManifest {
+  schemaVersion: "1.0";
   name?: string;
   tools: PolicyManifestTool[];
 }
@@ -20,6 +21,7 @@ export interface PolicyManifestTool {
   rateLimit?: {
     max: number;
     windowMs: number;
+    keyed?: boolean;
   };
   audit: boolean;
   timeoutMs?: number;
@@ -31,6 +33,7 @@ export function createManifest(
   options: { name?: string } = {}
 ): PolicyManifest {
   return {
+    schemaVersion: "1.0",
     name: options.name,
     tools: policies.map((policy) => ({
       name: policy.name,

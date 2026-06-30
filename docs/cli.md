@@ -12,6 +12,7 @@ Config format:
 
 ```json
 {
+  "schemaVersion": "1.0",
   "name": "filesystem-mcp",
   "tools": [
     {
@@ -36,6 +37,20 @@ toolgate validate-config --file toolgate.config.json
 Validation reports field paths for invalid names, risk values, policy lists, timeouts, and rate
 limits. It also rejects duplicate tool names. `manifest` runs the same validation before writing
 output.
+
+Pre-v1 config and manifest files must be migrated before validation:
+
+```bash
+toolgate migrate-config --file old-config.json --out toolgate.config.json
+toolgate migrate-manifest --file old-manifest.json --out policy-manifest.json
+```
+
+Export the stable JSON Schemas for editor or CI integration:
+
+```bash
+toolgate schema --type config --out toolgate-config.schema.json
+toolgate schema --type manifest --out policy-manifest.schema.json
+```
 
 ## Validate a Manifest
 

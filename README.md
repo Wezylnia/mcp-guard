@@ -96,6 +96,7 @@ If the agent asks for `.env`, the handler is not executed:
 - streaming audit-log filtering and summaries through API or CLI
 - lifecycle observer events for OpenTelemetry or custom metrics adapters
 - policy manifest export for visibility
+- versioned v1 policy-config and manifest JSON Schemas with migration commands
 - fail-fast runtime policy validation and duplicate-name config checks
 - manifest JSON schema and validation helpers
 - security-aware manifest comparison for policy regression checks

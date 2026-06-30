@@ -31,6 +31,7 @@ describe("manifest", () => {
     );
 
     expect(manifest).toEqual({
+      schemaVersion: "1.0",
       name: "filesystem-mcp",
       tools: [
         {
