@@ -2,6 +2,9 @@ import { readFile, writeFile } from "node:fs/promises";
 import { readAuditLog, summarizeAudit } from "../audit/readAuditLog.js";
 import type { AuditDecision } from "../audit/auditLogger.js";
 import { createManifest } from "../manifest/manifest.js";
+import type { PolicyManifest } from "../manifest/manifest.js";
+import { compareManifests } from "../manifest/compare.js";
+import type { ManifestChangeSeverity } from "../manifest/compare.js";
 import { validateManifest } from "../manifest/schema.js";
 import { validatePolicies } from "../policy/validatePolicy.js";
 import type { ToolPolicy } from "../gate/types.js";
@@ -41,6 +44,10 @@ export async function runCli(
 
   if (command === "audit") {
     return runAuditCommand(rest, io);
+  }
+
+  if (command === "check-manifest") {
+    return runCheckManifestCommand(rest, io);
   }
 
   io.stderr.write(`Unknown command '${command}'.\n`);
@@ -152,6 +159,50 @@ async function runAuditCommand(args: string[], io: CliIo): Promise<number> {
   }
 }
 
+async function runCheckManifestCommand(args: string[], io: CliIo): Promise<number> {
+  const options = parseOptions(args);
+  const basePath = options.base;
+  const headPath = options.head;
+  if (!basePath || !headPath) {
+    io.stderr.write("Missing required --base and --head options.\n");
+    return 1;
+  }
+  const failOn = options["fail-on"] ?? "danger";
+  if (!isSeverity(failOn)) {
+    io.stderr.write("--fail-on must be info, warning, or danger.\n");
+    return 1;
+  }
+
+  try {
+    const base = await readJson<unknown>(basePath);
+    const head = await readJson<unknown>(headPath);
+    const baseValidation = validateManifest(base);
+    const headValidation = validateManifest(head);
+    if (!baseValidation.valid || !headValidation.valid) {
+      writeIssues(baseValidation.issues.map((issue) => ({ ...issue, path: `base:${issue.path}` })), io.stderr);
+      writeIssues(headValidation.issues.map((issue) => ({ ...issue, path: `head:${issue.path}` })), io.stderr);
+      return 1;
+    }
+
+    const comparison = compareManifests(base as PolicyManifest, head as PolicyManifest);
+    const failed = comparison.changes.some((change) => severityRank(change.severity) >= severityRank(failOn));
+    if (options.json === "true") {
+      io.stdout.write(`${JSON.stringify({ ...comparison, passed: !failed, failOn }, null, 2)}\n`);
+    } else if (comparison.changes.length === 0) {
+      io.stdout.write("No policy manifest changes.\n");
+    } else {
+      for (const change of comparison.changes) {
+        io.stdout.write(`[${change.severity.toUpperCase()}] ${change.code} ${change.message}\n`);
+      }
+      io.stdout.write(`Policy check ${failed ? "failed" : "passed"} at '${failOn}' threshold.\n`);
+    }
+    return failed ? 1 : 0;
+  } catch (error) {
+    io.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    return 1;
+  }
+}
+
 function parseOptions(args: string[]): Record<string, string | undefined> {
   const options: Record<string, string | undefined> = {};
 
@@ -192,13 +243,23 @@ Usage:
   toolgate validate-config --file toolgate.config.json
   toolgate validate-manifest --file policy-manifest.json
   toolgate audit --file .toolgate/audit.jsonl [--tool name] [--decision blocked] [--json]
+  toolgate check-manifest --base before.json --head after.json [--fail-on danger] [--json]
 
 Commands:
   manifest           Create a policy manifest from a JSON config.
   validate-config    Validate a JSON policy config.
   validate-manifest  Validate a policy manifest.
   audit              Filter and summarize a JSONL audit log.
+  check-manifest     Detect security-relevant policy manifest changes.
 `);
+}
+
+function isSeverity(value: string): value is ManifestChangeSeverity {
+  return value === "info" || value === "warning" || value === "danger";
+}
+
+function severityRank(value: ManifestChangeSeverity): number {
+  return { info: 0, warning: 1, danger: 2 }[value];
 }
 
 function writeAuditSummary(

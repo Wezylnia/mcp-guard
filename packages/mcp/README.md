@@ -174,6 +174,7 @@ toolgate manifest --config toolgate.config.json --out policy-manifest.json
 toolgate validate-config --file toolgate.config.json
 toolgate validate-manifest --file policy-manifest.json
 toolgate audit --file .toolgate/audit.jsonl --decision blocked
+toolgate check-manifest --base policy-main.json --head policy-pr.json
 ```
 
 The config file for `toolgate manifest` is JSON:

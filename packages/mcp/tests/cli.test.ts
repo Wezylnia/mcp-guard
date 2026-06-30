@@ -126,6 +126,23 @@ describe("cli", () => {
     expect(exitCode).toBe(0);
     expect(JSON.parse(io.stdoutText()).summary).toMatchObject({ total: 1, reasons: { PATH_DENIED: 1 } });
   });
+
+  it("fails manifest checks when a protection is removed", async () => {
+    const basePath = path.join(tempDir, "base.json");
+    const headPath = path.join(tempDir, "head.json");
+    await writeFile(basePath, JSON.stringify({ tools: [{ name: "delete", risk: "destructive", requiresApproval: true, audit: true }] }), "utf8");
+    await writeFile(headPath, JSON.stringify({ tools: [{ name: "delete", risk: "destructive", requiresApproval: false, audit: true }] }), "utf8");
+    const io = createIo();
+
+    const exitCode = await runCli(["check-manifest", "--base", basePath, "--head", headPath, "--json"], io);
+
+    expect(exitCode).toBe(1);
+    const output = JSON.parse(io.stdoutText());
+    expect(output.passed).toBe(false);
+    expect(output.changes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "APPROVAL_DISABLED", severity: "danger" })
+    ]));
+  });
 });
 
 function createIo(): {

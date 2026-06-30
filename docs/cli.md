@@ -54,3 +54,13 @@ toolgate audit --file .toolgate/audit.jsonl --decision blocked --limit 100
 Filters include `--tool`, `--decision`, `--reason`, `--since`, `--until`, and `--limit`. Add
 `--json` for machine-readable summary and parse issues. The command exits with code `1` if any
 malformed audit lines are found.
+
+## Check Manifest Changes
+
+```bash
+toolgate check-manifest --base policy-main.json --head policy-pr.json
+```
+
+The default `danger` threshold returns exit code `1` for security-reducing changes. Use
+`--fail-on warning` to also require review for newly added tools, or `--fail-on info` for any
+manifest change. Add `--json` for CI reports.

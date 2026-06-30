@@ -98,6 +98,7 @@ If the agent asks for `.env`, the handler is not executed:
 - policy manifest export for visibility
 - fail-fast runtime policy validation and duplicate-name config checks
 - manifest JSON schema and validation helpers
+- security-aware manifest comparison for policy regression checks
 - `toolgate` CLI for manifest generation and validation
 - predictable structured errors
 
@@ -133,6 +134,12 @@ Inspect blocked calls in an audit log:
 
 ```bash
 toolgate audit --file .toolgate/audit.jsonl --decision blocked --limit 100
+```
+
+Fail CI when a policy manifest removes protection:
+
+```bash
+toolgate check-manifest --base policy-main.json --head policy-pr.json
 ```
 
 ## Development

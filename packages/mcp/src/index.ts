@@ -2,6 +2,7 @@ export { gate } from "./gate/gate.js";
 export { createAuditLogger } from "./audit/jsonlAuditLogger.js";
 export { readAuditLog, summarizeAudit } from "./audit/readAuditLog.js";
 export { createManifest } from "./manifest/manifest.js";
+export { compareManifests } from "./manifest/compare.js";
 export { gateMcp, isMcpToolResult, toMcpToolResult } from "./mcp/adapter.js";
 export { policyManifestSchema, validateManifest } from "./manifest/schema.js";
 export {
@@ -52,6 +53,11 @@ export type {
   ManifestValidationIssue,
   ManifestValidationResult
 } from "./manifest/schema.js";
+export type {
+  ManifestChange,
+  ManifestChangeSeverity,
+  ManifestComparison
+} from "./manifest/compare.js";
 export type {
   PolicyValidationIssue,
   PolicyValidationResult
