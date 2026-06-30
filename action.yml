@@ -1,0 +1,44 @@
+name: ToolGate Policy Check
+description: Fail a GitHub Actions job when an MCP policy manifest removes security controls.
+author: Wezylnia
+
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  base:
+    description: Path to the baseline policy manifest.
+    required: true
+  head:
+    description: Path to the candidate policy manifest.
+    required: true
+  fail-on:
+    description: Minimum change severity that fails the check (info, warning, or danger).
+    required: false
+    default: danger
+  toolgate-version:
+    description: toolgate-mcp package version used by the action.
+    required: false
+    default: 0.7.0
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        package-manager-cache: false
+    - name: Compare policy manifests
+      shell: bash
+      env:
+        TOOLGATE_BASE: ${{ inputs.base }}
+        TOOLGATE_HEAD: ${{ inputs.head }}
+        TOOLGATE_FAIL_ON: ${{ inputs['fail-on'] }}
+        TOOLGATE_VERSION: ${{ inputs['toolgate-version'] }}
+      run: >-
+        npx --yes "toolgate-mcp@${TOOLGATE_VERSION}" check-manifest
+        --base "${TOOLGATE_BASE}"
+        --head "${TOOLGATE_HEAD}"
+        --fail-on "${TOOLGATE_FAIL_ON}"

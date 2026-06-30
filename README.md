@@ -99,6 +99,7 @@ If the agent asks for `.env`, the handler is not executed:
 - fail-fast runtime policy validation and duplicate-name config checks
 - manifest JSON schema and validation helpers
 - security-aware manifest comparison for policy regression checks
+- reusable GitHub Action for blocking dangerous manifest changes in pull requests
 - `toolgate` CLI for manifest generation and validation
 - predictable structured errors
 
@@ -171,5 +172,6 @@ Create a release tag that matches the package version, such as `v0.5.1`, and the
 - [Examples](docs/examples.md)
 - [MCP Integration](docs/mcp-integration.md)
 - [Observability](docs/observability.md)
+- [GitHub Action](docs/github-action.md)
 - [Release Process](docs/release.md)
 - [Changelog](CHANGELOG.md)
