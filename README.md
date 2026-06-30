@@ -79,6 +79,7 @@ If the agent asks for `.env`, the handler is not executed:
 ## Core Features
 
 - `gate(policy, handler)` wrapper for MCP tool handlers
+- `createToolGate()` registry for shared defaults, duplicate detection, and manifest collection
 - `gateMcp(policy, handler)` adapter for MCP-compatible `content` and `isError` results
 - risk levels: `read`, `write`, `external`, `destructive`
 - approval-required blocking for dangerous tools
@@ -174,5 +175,6 @@ Create a release tag that matches the package version, such as `v0.7.1`, and the
 - [MCP Integration](docs/mcp-integration.md)
 - [Observability](docs/observability.md)
 - [GitHub Action](docs/github-action.md)
+- [Tool Registry](docs/registry.md)
 - [Release Process](docs/release.md)
 - [Changelog](CHANGELOG.md)

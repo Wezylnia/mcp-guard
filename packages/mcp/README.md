@@ -59,6 +59,9 @@ const deleteFileTool = gate(
 );
 ```
 
+For servers with multiple tools, `createToolGate()` applies shared defaults, rejects duplicate
+tool names, and generates a manifest from registered policies.
+
 Because this policy requires approval, the handler is not executed:
 
 ```json

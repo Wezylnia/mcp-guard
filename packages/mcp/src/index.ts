@@ -21,6 +21,7 @@ export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
 export { evaluateCustomRules, PolicyRuleExecutionError } from "./policy/customPolicy.js";
 export { emitToolGateEvent } from "./observability/observer.js";
+export { createToolGate, DuplicateToolPolicyError } from "./registry/toolGate.js";
 export {
   assertPolicy,
   InvalidToolPolicyError,
@@ -66,6 +67,11 @@ export type {
   ManifestComparison
 } from "./manifest/compare.js";
 export type { PolicyConfig, PolicyConfigTool } from "./policy/configSchema.js";
+export type {
+  CreateToolGateOptions,
+  ToolGateRegistry,
+  ToolPolicyDefaults
+} from "./registry/toolGate.js";
 export type {
   PolicyValidationIssue,
   PolicyValidationResult
