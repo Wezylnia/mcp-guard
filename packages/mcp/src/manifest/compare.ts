@@ -71,6 +71,7 @@ function compareTool(
   }
   compareBooleanProtection(base, head, "requiresApproval", "APPROVAL", changes);
   compareBooleanProtection(base, head, "audit", "AUDIT", changes);
+  compareBooleanProtection(base, head, "redact", "REDACTION", changes);
   compareTimeout(base, head, changes);
   compareRateLimit(base, head, changes);
   compareLists(base, head, "allowedPaths", "ALLOW_PATHS", true, changes);
@@ -85,7 +86,7 @@ function compareTool(
 function compareBooleanProtection(
   base: PolicyManifestTool,
   head: PolicyManifestTool,
-  field: "requiresApproval" | "audit",
+  field: "requiresApproval" | "audit" | "redact",
   code: string,
   changes: ManifestChange[]
 ): void {

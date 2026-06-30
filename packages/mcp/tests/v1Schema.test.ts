@@ -19,7 +19,7 @@ describe("v1 schemas", () => {
     expect(createManifestFromConfig(config)).toMatchObject({
       schemaVersion: "1.0",
       name: "server",
-      tools: [{ name: "read_file", requiresApproval: false, audit: true }]
+      tools: [{ name: "read_file", requiresApproval: false, audit: true, redact: false }]
     });
     expect(policyConfigSchema.required).toEqual(["schemaVersion", "tools"]);
   });
@@ -44,7 +44,27 @@ describe("v1 schemas", () => {
     const config = migratePolicyConfig({ tools: [{ name: "read" }] });
 
     expect(manifest.schemaVersion).toBe("1.0");
+    expect(manifest.tools[0].redact).toBe(false);
     expect(config.schemaVersion).toBe("1.0");
+  });
+
+  it("keeps the manual manifest validator strict with the JSON Schema", async () => {
+    const { validateManifest } = await import("../src/manifest/schema.js");
+    const result = validateManifest({
+      schemaVersion: "1.0",
+      unexpected: true,
+      tools: [
+        { name: "same", risk: "read", requiresApproval: false, audit: false, redact: false, extra: true },
+        { name: "same", risk: "read", requiresApproval: false, audit: false, redact: false }
+      ]
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.map((issue) => issue.path)).toEqual(expect.arrayContaining([
+      "$.unexpected",
+      "$.tools[0].extra",
+      "$.tools[1].name"
+    ]));
   });
 
   it("does not hide invalid legacy data during migration", () => {

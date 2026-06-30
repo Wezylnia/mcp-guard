@@ -63,7 +63,8 @@ describe("cli", () => {
             name: "fetch_url",
             risk: "external",
             requiresApproval: false,
-            audit: true
+            audit: true,
+            redact: false
           }
         ]
       }),
@@ -132,8 +133,8 @@ describe("cli", () => {
   it("fails manifest checks when a protection is removed", async () => {
     const basePath = path.join(tempDir, "base.json");
     const headPath = path.join(tempDir, "head.json");
-    await writeFile(basePath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "delete", risk: "destructive", requiresApproval: true, audit: true }] }), "utf8");
-    await writeFile(headPath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "delete", risk: "destructive", requiresApproval: false, audit: true }] }), "utf8");
+    await writeFile(basePath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "delete", risk: "destructive", requiresApproval: true, audit: true, redact: true }] }), "utf8");
+    await writeFile(headPath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "delete", risk: "destructive", requiresApproval: false, audit: true, redact: true }] }), "utf8");
     const io = createIo();
 
     const exitCode = await runCli(["check-manifest", "--base", basePath, "--head", headPath, "--json"], io);

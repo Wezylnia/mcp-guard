@@ -12,7 +12,7 @@ export interface ManifestValidationResult {
 
 export const policyManifestSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://toolgatekit.dev/schemas/policy-manifest.schema.json",
+  $id: "https://toolgatekit.dev/schemas/v1/policy-manifest.schema.json",
   title: "ToolGateKit Policy Manifest",
   type: "object",
   additionalProperties: false,
@@ -24,7 +24,7 @@ export const policyManifestSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["name", "risk", "requiresApproval", "audit"],
+        required: ["name", "risk", "requiresApproval", "audit", "redact"],
         properties: {
           name: { type: "string", minLength: 1 },
           description: { type: "string" },
@@ -52,6 +52,7 @@ export const policyManifestSchema = {
             }
           },
           audit: { type: "boolean" },
+          redact: { type: "boolean" },
           timeoutMs: { type: "number", minimum: 1 },
           metadata: { type: "object" }
         }
@@ -68,6 +69,12 @@ export function validateManifest(manifest: unknown): ManifestValidationResult {
     return invalid("$", "Manifest must be an object.");
   }
 
+  for (const key of Object.keys(manifest)) {
+    if (!["schemaVersion", "name", "tools"].includes(key)) {
+      issues.push({ path: `$.${key}`, message: "Unknown manifest field." });
+    }
+  }
+
   if (manifest.schemaVersion !== "1.0") {
     issues.push({ path: "$.schemaVersion", message: "schemaVersion must be '1.0'." });
   }
@@ -81,8 +88,17 @@ export function validateManifest(manifest: unknown): ManifestValidationResult {
     return { valid: issues.length === 0, issues };
   }
 
+  const names = new Map<string, number>();
   manifest.tools.forEach((tool, index) => {
     validateManifestTool(tool, `$.tools[${index}]`, issues);
+    if (isRecord(tool) && typeof tool.name === "string" && tool.name.length > 0) {
+      const previous = names.get(tool.name);
+      if (previous !== undefined) {
+        issues.push({ path: `$.tools[${index}].name`, message: `Tool name duplicates $.tools[${previous}].name.` });
+      } else {
+        names.set(tool.name, index);
+      }
+    }
   });
 
   return {
@@ -101,8 +117,20 @@ function validateManifestTool(
     return;
   }
 
+  const knownKeys = new Set([
+    "name", "description", "risk", "requiresApproval", "allowedPaths", "deniedPaths",
+    "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
+    "rateLimit", "audit", "redact", "timeoutMs", "metadata"
+  ]);
+  for (const key of Object.keys(tool)) {
+    if (!knownKeys.has(key)) issues.push({ path: `${path}.${key}`, message: "Unknown manifest tool field." });
+  }
+
   if (typeof tool.name !== "string" || tool.name.length === 0) {
     issues.push({ path: `${path}.name`, message: "Tool name must be a non-empty string." });
+  }
+  if (tool.description !== undefined && typeof tool.description !== "string") {
+    issues.push({ path: `${path}.description`, message: "Description must be a string." });
   }
 
   if (!["read", "write", "external", "destructive"].includes(String(tool.risk))) {
@@ -115,6 +143,9 @@ function validateManifestTool(
 
   if (typeof tool.audit !== "boolean") {
     issues.push({ path: `${path}.audit`, message: "audit must be a boolean." });
+  }
+  if (typeof tool.redact !== "boolean") {
+    issues.push({ path: `${path}.redact`, message: "redact must be a boolean." });
   }
 
   validateOptionalStringArray(tool, "allowedPaths", path, issues);
@@ -132,6 +163,9 @@ function validateManifestTool(
   if (tool.rateLimit !== undefined) {
     validateRateLimit(tool.rateLimit, `${path}.rateLimit`, issues);
   }
+  if (tool.metadata !== undefined && !isRecord(tool.metadata)) {
+    issues.push({ path: `${path}.metadata`, message: "metadata must be an object." });
+  }
 }
 
 function validateOptionalStringArray(
@@ -145,8 +179,8 @@ function validateOptionalStringArray(
   }
 
   const value = object[key];
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
-    issues.push({ path: `${path}.${key}`, message: `${key} must be an array of strings.` });
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.length === 0)) {
+    issues.push({ path: `${path}.${key}`, message: `${key} must be an array of non-empty strings.` });
   }
 }
 
@@ -158,6 +192,12 @@ function validateRateLimit(
   if (!isRecord(value)) {
     issues.push({ path, message: "rateLimit must be an object." });
     return;
+  }
+
+  for (const key of Object.keys(value)) {
+    if (!["max", "windowMs", "keyed", "namespace"].includes(key)) {
+      issues.push({ path: `${path}.${key}`, message: "Unknown rate-limit field." });
+    }
   }
 
   if (!Number.isInteger(value.max) || !isPositiveNumber(value.max)) {
@@ -175,10 +215,10 @@ function validateRateLimit(
   }
 }
 
-function stringArraySchema(): { type: "array"; items: { type: "string" } } {
+function stringArraySchema(): { type: "array"; items: { type: "string"; minLength: 1 } } {
   return {
     type: "array",
-    items: { type: "string" }
+    items: { type: "string", minLength: 1 }
   };
 }
 

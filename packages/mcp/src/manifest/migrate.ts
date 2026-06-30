@@ -16,7 +16,15 @@ export class InvalidPolicyManifestError extends TypeError {
 
 export function migrateManifest(value: unknown): PolicyManifest {
   const candidate = isRecord(value) && value.schemaVersion === undefined
-    ? { ...value, schemaVersion: "1.0" }
+    ? {
+        ...value,
+        schemaVersion: "1.0",
+        tools: Array.isArray(value.tools)
+          ? value.tools.map((tool) => isRecord(tool) && tool.redact === undefined
+            ? { ...tool, redact: false }
+            : tool)
+          : value.tools
+      }
     : value;
   const result = validateManifest(candidate);
   if (!result.valid) {

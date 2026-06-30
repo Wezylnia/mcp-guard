@@ -25,6 +25,7 @@ export interface PolicyManifestTool {
     namespace?: string;
   };
   audit: boolean;
+  redact: boolean;
   timeoutMs?: number;
   metadata?: Record<string, unknown>;
 }
@@ -55,6 +56,7 @@ export function createManifest(
         namespace: policy.rateLimit.namespace
       } : undefined,
       audit: Boolean(policy.audit),
+      redact: Boolean(policy.redact),
       timeoutMs: policy.timeoutMs,
       metadata: policy.metadata
     }))

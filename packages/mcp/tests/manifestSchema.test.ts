@@ -35,6 +35,7 @@ describe("manifest schema", () => {
           risk: "danger",
           requiresApproval: "yes",
           audit: "true",
+          redact: false,
           allowedDomains: [42],
           rateLimit: {
             max: 0,

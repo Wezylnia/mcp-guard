@@ -31,7 +31,7 @@ const stringArray = { type: "array", items: { type: "string", minLength: 1 } } a
 
 export const policyConfigSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://toolgatekit.dev/schemas/policy-config.schema.json",
+  $id: "https://toolgatekit.dev/schemas/v1/policy-config.schema.json",
   title: "ToolGateKit Policy Config",
   type: "object",
   additionalProperties: false,
@@ -130,6 +130,7 @@ export function createManifestFromConfig(config: PolicyConfig): PolicyManifest {
       customRules: tool.customRules,
       rateLimit: tool.rateLimit,
       audit: tool.audit ?? false,
+      redact: tool.redact ?? false,
       timeoutMs: tool.timeoutMs,
       metadata: tool.metadata
     }))

@@ -178,5 +178,6 @@ Create a release tag that matches the package version, such as `v0.7.1`, and the
 - [Observability](docs/observability.md)
 - [GitHub Action](docs/github-action.md)
 - [Tool Registry](docs/registry.md)
+- [v1 Migration](docs/v1-migration.md)
 - [Release Process](docs/release.md)
 - [Changelog](CHANGELOG.md)

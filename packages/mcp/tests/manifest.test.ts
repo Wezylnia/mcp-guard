@@ -19,6 +19,7 @@ describe("manifest", () => {
             windowMs: 60_000
           },
           audit: true,
+          redact: false,
           timeoutMs: 5000
         },
         {
@@ -53,6 +54,7 @@ describe("manifest", () => {
             namespace: undefined
           },
           audit: true,
+          redact: false,
           timeoutMs: 5000,
           metadata: undefined
         },
@@ -70,6 +72,7 @@ describe("manifest", () => {
           customRules: undefined,
           rateLimit: undefined,
           audit: false,
+          redact: false,
           timeoutMs: undefined,
           metadata: undefined
         }

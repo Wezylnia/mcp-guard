@@ -163,11 +163,17 @@ export {
   readAuditLog,
   summarizeAudit,
   createManifest,
+  migrateManifest,
   compareManifests,
+  createToolGate,
+  createMemoryRateLimitStore,
   destructiveFilesystemPolicy,
   externalApiPolicy,
   readOnlyFilesystemPolicy,
   policyManifestSchema,
+  policyConfigSchema,
+  validatePolicyConfig,
+  migratePolicyConfig,
   validatePolicy,
   validatePolicies,
   validateManifest,
@@ -184,6 +190,8 @@ toolgate validate-config --file toolgate.config.json
 toolgate validate-manifest --file policy-manifest.json
 toolgate audit --file .toolgate/audit.jsonl --decision blocked
 toolgate check-manifest --base policy-main.json --head policy-pr.json
+toolgate migrate-config --file old.json --out toolgate.config.json
+toolgate schema --type config --out toolgate-config.schema.json
 ```
 
 The config file for `toolgate manifest` is JSON:

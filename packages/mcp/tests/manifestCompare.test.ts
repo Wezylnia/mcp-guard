@@ -9,6 +9,7 @@ describe("manifest comparison", () => {
       risk: "write",
       requiresApproval: true,
       audit: true,
+      redact: true,
       timeoutMs: 1000,
       allowedPaths: ["tmp/**"],
       deniedPaths: [".env", "secrets/**"],
@@ -20,6 +21,7 @@ describe("manifest comparison", () => {
       risk: "destructive",
       requiresApproval: false,
       audit: false,
+      redact: false,
       allowedPaths: ["tmp/**", "src/**"],
       deniedPaths: [".env"]
     });
@@ -34,6 +36,7 @@ describe("manifest comparison", () => {
       "RISK_INCREASED",
       "APPROVAL_DISABLED",
       "AUDIT_DISABLED",
+      "REDACTION_DISABLED",
       "TIMEOUT_REMOVED",
       "RATE_LIMIT_REMOVED",
       "ALLOW_PATHS_ENTRIES_ADDED",
@@ -72,6 +75,8 @@ describe("manifest comparison", () => {
   });
 });
 
-function manifest(tool: PolicyManifest["tools"][number]): PolicyManifest {
-  return { schemaVersion: "1.0", name: "server", tools: [tool] };
+function manifest(
+  tool: Omit<PolicyManifest["tools"][number], "redact"> & { redact?: boolean }
+): PolicyManifest {
+  return { schemaVersion: "1.0", name: "server", tools: [{ redact: false, ...tool }] };
 }
