@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { gateMcp, isMcpToolResult, toMcpToolResult } from "../src/mcp/adapter.js";
+import { gateMcp, gateMcpHandler, isMcpToolResult, toMcpToolResult } from "../src/mcp/adapter.js";
 
 describe("MCP adapter", () => {
   it("preserves an existing MCP result from an allowed handler", async () => {
@@ -43,5 +43,21 @@ describe("MCP adapter", () => {
     expect(String(adapted.content[0].text)).toContain('"count":2');
     expect(isMcpToolResult(adapted)).toBe(true);
     expect(isMcpToolResult({ content: [{ text: "missing type" }] })).toBe(false);
+  });
+
+  it("preserves MCP SDK extra context while evaluating policy against tool input", async () => {
+    const handler = gateMcpHandler(
+      { name: "read_file", allowedPaths: ["src/**"] },
+      async (input: { path: string }, extra: { sessionId: string }, context) => ({
+        content: [{ type: "text", text: `${input.path}:${extra.sessionId}:${context.toolName}` }]
+      })
+    );
+
+    const allowed = await handler({ path: "src/index.ts" }, { sessionId: "s1" });
+    const blocked = await handler({ path: ".env" }, { sessionId: "s2" });
+
+    expect(allowed.content[0].text).toBe("src/index.ts:s1:read_file");
+    expect(blocked.isError).toBe(true);
+    expect(String(blocked.content[0].text)).toContain("PATH_DENIED");
   });
 });

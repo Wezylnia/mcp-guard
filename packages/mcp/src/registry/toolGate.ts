@@ -7,7 +7,13 @@ import type {
   ToolPolicy
 } from "../gate/types.js";
 import { createManifest, type PolicyManifest } from "../manifest/manifest.js";
-import { gateMcp, type McpAdapterOptions, type McpToolResult } from "../mcp/adapter.js";
+import {
+  gateMcp,
+  gateMcpHandler,
+  type McpAdapterOptions,
+  type McpSdkToolHandler,
+  type McpToolResult
+} from "../mcp/adapter.js";
 import { assertPolicy } from "../policy/validatePolicy.js";
 
 export type ToolPolicyDefaults = Partial<Omit<ToolPolicy, "name">>;
@@ -27,6 +33,11 @@ export interface ToolGateRegistry {
     handler: ToolHandler<TInput, TOutput>,
     options?: McpAdapterOptions
   ): (input: TInput) => Promise<McpToolResult>;
+  protectMcpHandler<TInput, TExtra, TOutput>(
+    policy: ToolPolicy,
+    handler: McpSdkToolHandler<TInput, TExtra, TOutput>,
+    options?: McpAdapterOptions
+  ): (input: TInput, extra: TExtra) => Promise<McpToolResult>;
   getPolicy(name: string): ToolPolicy | undefined;
   policies(): ToolPolicy[];
   manifest(options?: { name?: string }): PolicyManifest;
@@ -63,6 +74,13 @@ export function createToolGate(options: CreateToolGateOptions = {}): ToolGateReg
       adapterOptions: McpAdapterOptions = {}
     ) {
       return gateMcp(register(policy), handler, adapterOptions);
+    },
+    protectMcpHandler<TInput, TExtra, TOutput>(
+      policy: ToolPolicy,
+      handler: McpSdkToolHandler<TInput, TExtra, TOutput>,
+      adapterOptions: McpAdapterOptions = {}
+    ) {
+      return gateMcpHandler(register(policy), handler, adapterOptions);
     },
     getPolicy(name: string): ToolPolicy | undefined {
       const policy = registered.get(name);

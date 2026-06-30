@@ -35,10 +35,17 @@ export function gate<TInput, TOutput>(
   policy: ToolPolicy,
   handler: ToolHandler<TInput, TOutput>
 ): ProtectedToolHandler<TInput, ToolGateResult<TOutput>> {
+  return createGateExecutor(policy, handler);
+}
+
+export function createGateExecutor<TInput, TOutput, TArgs extends unknown[] = []>(
+  policy: ToolPolicy,
+  handler: (input: TInput, context: ToolGateContext, ...args: TArgs) => TOutput | Promise<TOutput>
+): (input: TInput, ...args: TArgs) => Promise<ToolGateResult<TOutput>> {
   assertPolicy(policy);
   const rateLimiter = createRateLimiter(policy.rateLimit);
 
-  return async (input: TInput) => {
+  return async (input: TInput, ...args: TArgs) => {
     const controller = new AbortController();
     const ctx: ToolGateContext = {
       toolName: policy.name,
@@ -153,7 +160,7 @@ export function gate<TInput, TOutput>(
     }
 
     try {
-      const output = await withTimeout(handler(input, ctx), policy.timeoutMs, controller, policy);
+      const output = await withTimeout(handler(input, ctx, ...args), policy.timeoutMs, controller, policy);
       let redactedOutput: TOutput;
       try {
         redactedOutput = policy.redact ? redact(output, policy.redact) : output;

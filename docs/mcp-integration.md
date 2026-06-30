@@ -32,3 +32,22 @@ tool schema.
 
 Use `toMcpToolResult()` when adaptation needs to happen separately from `gate()`, and
 `isMcpToolResult()` for structural result checks.
+
+## Preserve SDK Handler Context
+
+MCP SDK handlers may receive a second `extra` argument containing request and transport context.
+Use `gateMcpHandler()` to preserve it while policy extraction still runs against the actual tool
+input:
+
+```ts
+server.tool(
+  "read_file",
+  schema,
+  gateMcpHandler(policy, async (input, extra, toolgateContext) => ({
+    content: [{ type: "text", text: await readForSession(input.path, extra.sessionId) }]
+  }))
+);
+```
+
+The registry equivalent is `toolgate.protectMcpHandler()`. Both helpers are structural and do not
+add an MCP SDK runtime dependency.

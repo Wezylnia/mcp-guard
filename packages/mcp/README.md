@@ -154,7 +154,9 @@ store and `namespace` across handlers, or implement `RateLimitStore` for an atom
 export {
   gate,
   gateMcp,
+  gateMcpHandler,
   toMcpToolResult,
+  createOpenTelemetryObserver,
   evaluateCustomRules,
   emitToolGateEvent,
   createAuditLogger,

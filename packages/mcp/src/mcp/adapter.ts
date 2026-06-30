@@ -1,5 +1,6 @@
-import { gate } from "../gate/gate.js";
+import { createGateExecutor, gate } from "../gate/gate.js";
 import type {
+  ToolGateContext,
   ToolGateResult,
   ToolHandler,
   ToolPolicy
@@ -21,6 +22,12 @@ export interface McpToolResult {
 export interface McpAdapterOptions {
   includeStructuredContent?: boolean;
 }
+
+export type McpSdkToolHandler<TInput, TExtra, TOutput> = (
+  input: TInput,
+  extra: TExtra,
+  context: ToolGateContext
+) => TOutput | Promise<TOutput>;
 
 export function toMcpToolResult<T>(
   result: ToolGateResult<T>,
@@ -58,6 +65,23 @@ export function gateMcp<TInput, TOutput>(
     if (result.ok && isMcpToolResult(result.data)) {
       return result.data;
     }
+    return toMcpToolResult(result, options);
+  };
+}
+
+export function gateMcpHandler<TInput, TExtra, TOutput>(
+  policy: ToolPolicy,
+  handler: McpSdkToolHandler<TInput, TExtra, TOutput>,
+  options: McpAdapterOptions = {}
+): (input: TInput, extra: TExtra) => Promise<McpToolResult> {
+  const protectedHandler = createGateExecutor<TInput, TOutput, [TExtra]>(
+    policy,
+    (input, context, extra) => handler(input, extra, context)
+  );
+
+  return async (input: TInput, extra: TExtra): Promise<McpToolResult> => {
+    const result = await protectedHandler(input, extra);
+    if (result.ok && isMcpToolResult(result.data)) return result.data;
     return toMcpToolResult(result, options);
   };
 }

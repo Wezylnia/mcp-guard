@@ -4,7 +4,7 @@ export { readAuditLog, summarizeAudit } from "./audit/readAuditLog.js";
 export { createManifest } from "./manifest/manifest.js";
 export { migrateManifest, InvalidPolicyManifestError } from "./manifest/migrate.js";
 export { compareManifests } from "./manifest/compare.js";
-export { gateMcp, isMcpToolResult, toMcpToolResult } from "./mcp/adapter.js";
+export { gateMcp, gateMcpHandler, isMcpToolResult, toMcpToolResult } from "./mcp/adapter.js";
 export { policyManifestSchema, validateManifest } from "./manifest/schema.js";
 export {
   createManifestFromConfig,
@@ -21,6 +21,7 @@ export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
 export { evaluateCustomRules, PolicyRuleExecutionError } from "./policy/customPolicy.js";
 export { emitToolGateEvent } from "./observability/observer.js";
+export { createOpenTelemetryObserver } from "./observability/openTelemetry.js";
 export { createToolGate, DuplicateToolPolicyError } from "./registry/toolGate.js";
 export {
   createMemoryRateLimitStore,
@@ -84,6 +85,7 @@ export type {
 export type {
   McpAdapterOptions,
   McpContentBlock,
+  McpSdkToolHandler,
   McpToolResult
 } from "./mcp/adapter.js";
 export type { RedactionOptions } from "./redaction/redact.js";
@@ -93,3 +95,9 @@ export type {
   RateLimiter,
   RateLimitStore
 } from "./rateLimit/rateLimiter.js";
+export type {
+  OpenTelemetryObserverOptions,
+  OpenTelemetrySpanLike,
+  OpenTelemetryTracerLike,
+  TelemetryAttribute
+} from "./observability/openTelemetry.js";

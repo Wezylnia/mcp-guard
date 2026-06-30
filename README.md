@@ -81,6 +81,7 @@ If the agent asks for `.env`, the handler is not executed:
 - `gate(policy, handler)` wrapper for MCP tool handlers
 - `createToolGate()` registry for shared defaults, duplicate detection, and manifest collection
 - `gateMcp(policy, handler)` adapter for MCP-compatible `content` and `isError` results
+- `gateMcpHandler()` integration preserving MCP SDK request context
 - risk levels: `read`, `write`, `external`, `destructive`
 - approval-required blocking for dangerous tools
 - host-driven async approval providers with structured denial and failure results
@@ -96,6 +97,7 @@ If the agent asks for `.env`, the handler is not executed:
 - append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
 - streaming audit-log filtering and summaries through API or CLI
 - lifecycle observer events for OpenTelemetry or custom metrics adapters
+- dependency-free OpenTelemetry span bridge
 - policy manifest export for visibility
 - versioned v1 policy-config and manifest JSON Schemas with migration commands
 - fail-fast runtime policy validation and duplicate-name config checks
