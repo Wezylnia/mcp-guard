@@ -23,6 +23,7 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 - this tool must time out after a fixed duration
 - this tool output and audit logs should redact secrets
 - this tool call should be written to a JSONL audit log
+- this tool should emit privacy-conscious lifecycle events to a telemetry adapter
 
 It returns structured results instead of throwing for expected policy failures.
 

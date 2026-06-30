@@ -49,6 +49,9 @@ export function validatePolicy(policy: unknown, path = "$"): PolicyValidationRes
   if (policy.approval !== undefined && typeof policy.approval !== "function") {
     issues.push({ path: `${path}.approval`, message: "Approval must be a function." });
   }
+  if (policy.observe !== undefined && typeof policy.observe !== "function") {
+    issues.push({ path: `${path}.observe`, message: "Observe must be a function." });
+  }
   if (policy.rules !== undefined) {
     if (!Array.isArray(policy.rules)) {
       issues.push({ path: `${path}.rules`, message: "Rules must be an array." });

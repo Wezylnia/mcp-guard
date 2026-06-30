@@ -12,6 +12,7 @@ export {
 export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
 export { evaluateCustomRules, PolicyRuleExecutionError } from "./policy/customPolicy.js";
+export { emitToolGateEvent } from "./observability/observer.js";
 export {
   assertPolicy,
   InvalidToolPolicyError,
@@ -25,6 +26,8 @@ export type {
   ApprovalRequest,
   PolicyRuleDecision,
   ToolGateContext,
+  ToolGateEvent,
+  ToolGateEventBase,
   ToolGateError,
   ToolGateErrorType,
   ToolGateMeta,
@@ -33,6 +36,7 @@ export type {
   ProtectedToolHandler,
   RateLimitOptions,
   ToolHandler,
+  ToolGateObserver,
   ToolPolicy,
   ToolPolicyRule,
   ToolRisk

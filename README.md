@@ -94,6 +94,7 @@ If the agent asks for `.env`, the handler is not executed:
 - default redaction for common secrets and tokens
 - append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
 - streaming audit-log filtering and summaries through API or CLI
+- lifecycle observer events for OpenTelemetry or custom metrics adapters
 - policy manifest export for visibility
 - fail-fast runtime policy validation and duplicate-name config checks
 - manifest JSON schema and validation helpers
@@ -162,5 +163,6 @@ Create a release tag that matches the package version, such as `v0.5.1`, and the
 - [Limitations](docs/limitations.md)
 - [Examples](docs/examples.md)
 - [MCP Integration](docs/mcp-integration.md)
+- [Observability](docs/observability.md)
 - [Release Process](docs/release.md)
 - [Changelog](CHANGELOG.md)

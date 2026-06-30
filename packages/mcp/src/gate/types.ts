@@ -43,6 +43,23 @@ export interface ToolPolicyRule {
   ) => boolean | PolicyRuleDecision | Promise<boolean | PolicyRuleDecision>;
 }
 
+export interface ToolGateEventBase {
+  requestId: string;
+  toolName: string;
+  risk: ToolRisk;
+  timestamp: string;
+  durationMs: number;
+}
+
+export type ToolGateEvent =
+  | (ToolGateEventBase & { type: "started" })
+  | (ToolGateEventBase & { type: "approved" })
+  | (ToolGateEventBase & { type: "blocked"; code: string })
+  | (ToolGateEventBase & { type: "completed"; outputSummary: Record<string, unknown> })
+  | (ToolGateEventBase & { type: "failed"; code: string });
+
+export type ToolGateObserver = (event: ToolGateEvent) => void | Promise<void>;
+
 export interface ToolPolicy {
   name: string;
   description?: string;
@@ -50,6 +67,7 @@ export interface ToolPolicy {
   requireApproval?: boolean;
   approval?: ApprovalProvider;
   rules?: ToolPolicyRule[];
+  observe?: ToolGateObserver;
   allowedPaths?: string[];
   deniedPaths?: string[];
   extractPaths?: ToolInputExtractor;

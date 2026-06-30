@@ -3,6 +3,7 @@ import { createAuditLogger } from "../audit/jsonlAuditLogger.js";
 import { noopAuditLogger } from "../audit/noopAuditLogger.js";
 import { evaluatePolicy } from "../policy/evaluatePolicy.js";
 import { evaluateCustomRules, PolicyRuleExecutionError } from "../policy/customPolicy.js";
+import { emitToolGateEvent } from "../observability/observer.js";
 import { assertPolicy } from "../policy/validatePolicy.js";
 import { createRateLimiter } from "../rateLimit/rateLimiter.js";
 import { redact } from "../redaction/redact.js";
@@ -49,6 +50,7 @@ export function gate<TInput, TOutput>(
     const audit = resolveAuditLogger(policy);
     const auditInput = redactForLogs(input, policy);
     let approvalMetadata: Record<string, unknown> | undefined;
+    await emitToolGateEvent(policy, ctx, { type: "started" });
 
     const decision = evaluatePolicy(policy, input);
     if (!decision.allowed) {
@@ -64,6 +66,7 @@ export function gate<TInput, TOutput>(
         input: auditInput,
         metadata: policy.metadata
       });
+      await emitToolGateEvent(policy, ctx, { type: "blocked", code: error.code });
       return { ok: false, error, meta: createMeta(ctx) };
     }
 
@@ -72,6 +75,7 @@ export function gate<TInput, TOutput>(
       if (!customDecision.allowed) {
         const error = policyViolationError(policy, customDecision);
         await auditBlocked(audit, policy, ctx, auditInput, error.code);
+        await emitToolGateEvent(policy, ctx, { type: "blocked", code: error.code });
         return { ok: false, error, meta: createMeta(ctx) };
       }
     } catch (error) {
@@ -79,6 +83,7 @@ export function gate<TInput, TOutput>(
         ? policyRuleError(policy, error.rule, error.cause)
         : policyRuleError(policy, "unknown", error);
       await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+      await emitToolGateEvent(policy, ctx, { type: "failed", code: normalizedError.code });
       return { ok: false, error: normalizedError, meta: createMeta(ctx) };
     }
 
@@ -86,6 +91,7 @@ export function gate<TInput, TOutput>(
       if (!policy.approval) {
         const error = approvalRequiredError(policy);
         await auditBlocked(audit, policy, ctx, auditInput, error.code);
+        await emitToolGateEvent(policy, ctx, { type: "blocked", code: error.code });
         return { ok: false, error, meta: createMeta(ctx) };
       }
 
@@ -103,13 +109,16 @@ export function gate<TInput, TOutput>(
         if (!decision.approved) {
           const error = approvalDeniedError(policy, decision.reason);
           await auditBlocked(audit, policy, ctx, auditInput, error.code, decision.metadata);
+          await emitToolGateEvent(policy, ctx, { type: "blocked", code: error.code });
           return { ok: false, error, meta: createMeta(ctx) };
         }
 
         approvalMetadata = decision.metadata;
+        await emitToolGateEvent(policy, ctx, { type: "approved" });
       } catch (error) {
         const normalizedError = approvalError(policy, error);
         await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+        await emitToolGateEvent(policy, ctx, { type: "failed", code: normalizedError.code });
         return { ok: false, error: normalizedError, meta: createMeta(ctx) };
       }
     }
@@ -128,6 +137,7 @@ export function gate<TInput, TOutput>(
         input: auditInput,
         metadata: policy.metadata
       });
+      await emitToolGateEvent(policy, ctx, { type: "blocked", code: error.code });
       return { ok: false, error, meta: createMeta(ctx) };
     }
 
@@ -139,8 +149,11 @@ export function gate<TInput, TOutput>(
       } catch (error) {
         const normalizedError = redactionError(policy, error);
         await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+        await emitToolGateEvent(policy, ctx, { type: "failed", code: normalizedError.code });
         return { ok: false, error: normalizedError, meta: createMeta(ctx) };
       }
+
+      const outputSummary = summarizeOutput(redactedOutput);
 
       await safeAudit(audit, {
         timestamp: new Date().toISOString(),
@@ -151,9 +164,11 @@ export function gate<TInput, TOutput>(
         durationMs: createMeta(ctx).durationMs,
         reason: policy.requireApproval ? "APPROVED" : undefined,
         input: auditInput,
-        outputSummary: summarizeOutput(redactedOutput),
+        outputSummary,
         metadata: mergeMetadata(policy.metadata, approvalMetadata)
       });
+
+      await emitToolGateEvent(policy, ctx, { type: "completed", outputSummary });
 
       return { ok: true, data: redactedOutput, meta: createMeta(ctx) };
     } catch (error) {
@@ -163,6 +178,7 @@ export function gate<TInput, TOutput>(
           : handlerError(policy, error);
 
       await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+      await emitToolGateEvent(policy, ctx, { type: "failed", code: normalizedError.code });
       return { ok: false, error: normalizedError, meta: createMeta(ctx) };
     }
   };
