@@ -115,3 +115,31 @@ gate(
 ```
 
 Rate limiting is in-memory per protected handler instance.
+
+## Custom Rules
+
+Use custom rules for application-specific checks that cannot be expressed as paths, domains, or
+commands. Rules run sequentially after built-in policies and before approval or handler execution.
+
+```ts
+gate(
+  {
+    name: "create_ticket",
+    rules: [
+      {
+        name: "tenant_access",
+        evaluate: async (input, context) => ({
+          allowed: await canAccessTenant(input.tenantId),
+          code: "TENANT_DENIED",
+          details: { requestId: context.requestId }
+        })
+      }
+    ]
+  },
+  handler
+);
+```
+
+Rules may return a boolean or a decision object. Evaluation stops at the first denial. Exceptions
+fail closed as `POLICY_RULE_ERROR`; they never allow the handler to run. Manifests include custom
+rule names but not executable rule code.

@@ -28,12 +28,28 @@ export type ApprovalProvider = (
   request: ApprovalRequest
 ) => boolean | ApprovalDecision | Promise<boolean | ApprovalDecision>;
 
+export interface PolicyRuleDecision {
+  allowed: boolean;
+  code?: string;
+  message?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface ToolPolicyRule {
+  name: string;
+  evaluate: (
+    input: unknown,
+    context: ToolGateContext
+  ) => boolean | PolicyRuleDecision | Promise<boolean | PolicyRuleDecision>;
+}
+
 export interface ToolPolicy {
   name: string;
   description?: string;
   risk?: ToolRisk;
   requireApproval?: boolean;
   approval?: ApprovalProvider;
+  rules?: ToolPolicyRule[];
   allowedPaths?: string[];
   deniedPaths?: string[];
   extractPaths?: ToolInputExtractor;
@@ -70,6 +86,7 @@ export type ProtectedToolHandler<TInput, TOutput> = (
 
 export type ToolGateErrorType =
   | "policy_violation"
+  | "policy_error"
   | "approval_required"
   | "approval_denied"
   | "approval_error"

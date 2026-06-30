@@ -16,6 +16,7 @@ export interface PolicyManifestTool {
   deniedDomains?: string[];
   allowedCommands?: string[];
   deniedCommands?: string[];
+  customRules?: string[];
   rateLimit?: {
     max: number;
     windowMs: number;
@@ -42,6 +43,7 @@ export function createManifest(
       deniedDomains: policy.deniedDomains,
       allowedCommands: policy.allowedCommands,
       deniedCommands: policy.deniedCommands,
+      customRules: policy.rules?.map((rule) => rule.name),
       rateLimit: policy.rateLimit,
       audit: Boolean(policy.audit),
       timeoutMs: policy.timeoutMs,

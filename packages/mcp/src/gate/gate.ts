@@ -2,6 +2,7 @@ import type { AuditLogger } from "../audit/auditLogger.js";
 import { createAuditLogger } from "../audit/jsonlAuditLogger.js";
 import { noopAuditLogger } from "../audit/noopAuditLogger.js";
 import { evaluatePolicy } from "../policy/evaluatePolicy.js";
+import { evaluateCustomRules, PolicyRuleExecutionError } from "../policy/customPolicy.js";
 import { assertPolicy } from "../policy/validatePolicy.js";
 import { createRateLimiter } from "../rateLimit/rateLimiter.js";
 import { redact } from "../redaction/redact.js";
@@ -15,6 +16,7 @@ import {
   createMeta,
   handlerError,
   policyViolationError,
+  policyRuleError,
   rateLimitedError,
   redactionError,
   timeoutError
@@ -63,6 +65,21 @@ export function gate<TInput, TOutput>(
         metadata: policy.metadata
       });
       return { ok: false, error, meta: createMeta(ctx) };
+    }
+
+    try {
+      const customDecision = await evaluateCustomRules(policy.rules, input, ctx);
+      if (!customDecision.allowed) {
+        const error = policyViolationError(policy, customDecision);
+        await auditBlocked(audit, policy, ctx, auditInput, error.code);
+        return { ok: false, error, meta: createMeta(ctx) };
+      }
+    } catch (error) {
+      const normalizedError = error instanceof PolicyRuleExecutionError
+        ? policyRuleError(policy, error.rule, error.cause)
+        : policyRuleError(policy, "unknown", error);
+      await auditFailure(audit, policy, ctx, auditInput, normalizedError);
+      return { ok: false, error: normalizedError, meta: createMeta(ctx) };
     }
 
     if (policy.requireApproval) {

@@ -88,6 +88,7 @@ If the agent asks for `.env`, the handler is not executed:
 - command allowlists and denylists
 - in-memory rate limiting per protected handler
 - custom input extractors for paths, URLs, and commands
+- fail-closed sync or async custom policy rules for application-specific checks
 - policy presets for common filesystem and external API tools
 - timeout handling with `AbortSignal`
 - default redaction for common secrets and tokens

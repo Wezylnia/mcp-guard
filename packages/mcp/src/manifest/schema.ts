@@ -38,6 +38,7 @@ export const policyManifestSchema = {
           deniedDomains: stringArraySchema(),
           allowedCommands: stringArraySchema(),
           deniedCommands: stringArraySchema(),
+          customRules: stringArraySchema(),
           rateLimit: {
             type: "object",
             additionalProperties: false,
@@ -115,6 +116,7 @@ function validateManifestTool(
   validateOptionalStringArray(tool, "deniedDomains", path, issues);
   validateOptionalStringArray(tool, "allowedCommands", path, issues);
   validateOptionalStringArray(tool, "deniedCommands", path, issues);
+  validateOptionalStringArray(tool, "customRules", path, issues);
 
   if (tool.timeoutMs !== undefined && !isPositiveNumber(tool.timeoutMs)) {
     issues.push({ path: `${path}.timeoutMs`, message: "timeoutMs must be a positive number." });

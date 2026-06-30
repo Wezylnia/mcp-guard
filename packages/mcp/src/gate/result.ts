@@ -52,6 +52,18 @@ export function policyViolationError(policy: ToolPolicy, decision: PolicyDecisio
   };
 }
 
+export function policyRuleError(policy: ToolPolicy, rule: string, error: unknown): ToolGateError {
+  return {
+    type: "policy_error",
+    code: "POLICY_RULE_ERROR",
+    message: `Tool '${policy.name}' policy rule '${rule}' failed.`,
+    details: {
+      rule,
+      message: error instanceof Error ? error.message : String(error)
+    }
+  };
+}
+
 export function timeoutError(policy: ToolPolicy, timeoutMs: number): ToolGateError {
   return {
     type: "timeout",

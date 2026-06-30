@@ -49,6 +49,25 @@ export function validatePolicy(policy: unknown, path = "$"): PolicyValidationRes
   if (policy.approval !== undefined && typeof policy.approval !== "function") {
     issues.push({ path: `${path}.approval`, message: "Approval must be a function." });
   }
+  if (policy.rules !== undefined) {
+    if (!Array.isArray(policy.rules)) {
+      issues.push({ path: `${path}.rules`, message: "Rules must be an array." });
+    } else {
+      policy.rules.forEach((rule, index) => {
+        const rulePath = `${path}.rules[${index}]`;
+        if (!isRecord(rule)) {
+          issues.push({ path: rulePath, message: "Rule must be an object." });
+          return;
+        }
+        if (typeof rule.name !== "string" || rule.name.trim().length === 0) {
+          issues.push({ path: `${rulePath}.name`, message: "Rule name must be a non-empty string." });
+        }
+        if (typeof rule.evaluate !== "function") {
+          issues.push({ path: `${rulePath}.evaluate`, message: "Rule evaluate must be a function." });
+        }
+      });
+    }
+  }
 
   for (const key of listKeys) {
     validateStringList(policy, key, path, issues);

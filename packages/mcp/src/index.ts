@@ -11,6 +11,7 @@ export {
 } from "./presets/presets.js";
 export { redact } from "./redaction/redact.js";
 export { evaluatePolicy } from "./policy/evaluatePolicy.js";
+export { evaluateCustomRules, PolicyRuleExecutionError } from "./policy/customPolicy.js";
 export {
   assertPolicy,
   InvalidToolPolicyError,
@@ -22,6 +23,7 @@ export type {
   ApprovalDecision,
   ApprovalProvider,
   ApprovalRequest,
+  PolicyRuleDecision,
   ToolGateContext,
   ToolGateError,
   ToolGateErrorType,
@@ -32,6 +34,7 @@ export type {
   RateLimitOptions,
   ToolHandler,
   ToolPolicy,
+  ToolPolicyRule,
   ToolRisk
 } from "./gate/types.js";
 export type { AuditEntry, AuditLogger, CreateAuditLoggerOptions } from "./audit/auditLogger.js";

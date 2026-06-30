@@ -18,6 +18,7 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 - this tool may only access specific file paths
 - this tool may only call specific network domains
 - this tool may only run specific command strings
+- this tool must pass application-specific sync or async policy rules
 - this tool can be rate limited in memory
 - this tool must time out after a fixed duration
 - this tool output and audit logs should redact secrets
