@@ -20,8 +20,8 @@ export interface ManifestComparison {
 const riskRank: Record<string, number> = {
   read: 0,
   write: 1,
-  external: 2,
-  destructive: 3
+  external: 1,
+  destructive: 2
 };
 
 export function compareManifests(

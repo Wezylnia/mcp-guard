@@ -30,15 +30,22 @@ export async function evaluateCustomRules(
       throw new PolicyRuleExecutionError(rule.name, error);
     }
 
-    const decision = typeof rawDecision === "boolean"
-      ? { allowed: rawDecision }
-      : rawDecision;
+    if (
+      typeof rawDecision !== "boolean" &&
+      (!rawDecision || typeof rawDecision !== "object" || typeof rawDecision.allowed !== "boolean")
+    ) {
+      throw new PolicyRuleExecutionError(
+        rule.name,
+        new TypeError("Policy rule must return a boolean or a decision with a boolean allowed field.")
+      );
+    }
+    const decision = typeof rawDecision === "boolean" ? { allowed: rawDecision } : rawDecision;
     if (!decision.allowed) {
       return {
         allowed: false,
         code: decision.code ?? "CUSTOM_RULE_DENIED",
         message: decision.message ?? `Tool '${context.toolName}' was denied by policy rule '${rule.name}'.`,
-        details: { rule: rule.name, ...decision.details }
+        details: { ...decision.details, rule: rule.name }
       };
     }
   }

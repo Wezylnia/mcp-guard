@@ -75,6 +75,24 @@ describe("custom policy rules", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
+  it("fails closed on malformed JavaScript rule decisions", async () => {
+    const protectedHandler = gate(
+      {
+        name: "unsafe",
+        rules: [{ name: "malformed", evaluate: (() => null) as never }]
+      },
+      async () => "never"
+    );
+
+    const result = await protectedHandler({});
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("POLICY_RULE_ERROR");
+      expect(result.error.details?.rule).toBe("malformed");
+    }
+  });
+
   it("includes rule names in manifests", () => {
     const manifest = createManifest([
       { name: "tool", rules: [{ name: "tenant", evaluate: () => true }] }
